@@ -37,6 +37,9 @@
   <PropertyGroup>
     <StartupObject>Neith.App</StartupObject>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>neith_spacepedia_H51_icon.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="DnsClient, Version=1.2.0.0, Culture=neutral, PublicKeyToken=4574bb5573c51424, processorArchitecture=MSIL">
       <HintPath>..\packages\DnsClient.1.2.0\lib\net45\DnsClient.dll</HintPath>
@@ -181,6 +184,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="test\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="neith_spacepedia_H51_icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
