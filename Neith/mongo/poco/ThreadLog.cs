@@ -6,14 +6,19 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Neith.com.dgs.dapc.neith.mongo
+namespace Neith.MongoDB.poco
 {
     class ThreadLog
     {
+        [BsonIgnoreIfNull]
         public readonly string name;
+        [BsonIgnoreIfNull]
         public readonly long threadId;
+        [BsonIgnoreIfNull]
         public readonly ThreadPriority priority;
+        [BsonIgnoreIfNull]
         public readonly ThreadState state;
+        [BsonIgnoreIfNull]
         public readonly bool alive, daemon;
 
         public ThreadLog(Thread t)

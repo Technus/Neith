@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Neith.com.dgs.dapc.neith.mongo
+namespace Neith.MongoDB.poco
 {
     class ThrowableLog
     {
@@ -17,16 +17,19 @@ namespace Neith.com.dgs.dapc.neith.mongo
         [BsonId]
         public ObjectId id;
 
-        public readonly string applicationName;
-
         [BsonIgnore]
         public readonly Exception throwable;
-        public readonly string throwableClass;
-        public readonly string message;
+
+        [BsonIgnoreIfNull]
+        public readonly string applicationName,throwableClass, message;
         public readonly ThrowableLog cause;
+        [BsonIgnoreIfNull]
         public readonly ReadOnlyCollection<StackTraceElement> stackTrace;
+        [BsonIgnoreIfNull]
         public readonly ThreadLog threadLog;
+        [BsonIgnoreIfNull]
         public readonly DateTime time;
+        [BsonIgnoreIfNull]
         public readonly SystemUser systemUser;
 
         public ThrowableLog(Exception t)
@@ -76,6 +79,7 @@ namespace Neith.com.dgs.dapc.neith.mongo
             this.threadLog = threadLog;
             this.time = time;
             this.systemUser = systemUser;
+            throwable = null;
         }
     }
 }

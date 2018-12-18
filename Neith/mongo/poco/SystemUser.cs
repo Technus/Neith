@@ -6,10 +6,11 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Neith.com.dgs.dapc.neith.mongo
+namespace Neith.MongoDB.poco
 {
     class SystemUser
     {
+        [BsonIgnoreIfNull]
         public readonly string domainName, userName, systemName;
 
         public SystemUser()

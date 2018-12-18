@@ -1,4 +1,4 @@
-﻿using Neith.com.dgs.dapc.neith.mongo;
+﻿using Neith.MongoDB.poco;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -27,14 +27,6 @@ namespace Neith
         {
             InitializeComponent();
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(HandleError);
-            try
-            {
-                throw new Exception("I like cake!");
-            }
-            catch(Exception e)
-            {
-                HandleError(e, null);
-            }
         }
 
         public static void HandleError(Object sender, UnhandledExceptionEventArgs e)

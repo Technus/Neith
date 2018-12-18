@@ -8,13 +8,13 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Neith.com.dgs.dapc.neith.mongo
+namespace Neith.MongoDB.poco
 {
     class StackTraceElement
     {
-        public readonly string declaringClass;
-        public readonly string methodName;
-        public readonly string fileName;
+        [BsonIgnoreIfNull]
+        public readonly string declaringClass,methodName,fileName;
+        [BsonIgnoreIfNull]
         public readonly int lineNumber;
 
         public static ReadOnlyCollection<StackTraceElement> BuildElements(StackTrace stackTrace)
