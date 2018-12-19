@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Neith.utility
 {
-    public interface ITimedModification
+    interface ITimedModification
     {
         DateTime getTimestamp();
     }
 
-    public static class Utility
+    static class TimedModificationUtility
     {
         public static T GetNewest<T>(IEnumerable<T> timedModifications) where T: ITimedModification
         {

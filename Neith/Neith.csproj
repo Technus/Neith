@@ -24,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,12 +34,19 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>Neith.App</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>neith_spacepedia_H51_icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>false</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DnsClient, Version=1.2.0.0, Culture=neutral, PublicKeyToken=4574bb5573c51424, processorArchitecture=MSIL">
@@ -100,8 +108,15 @@
     </ApplicationDefinition>
     <Compile Include="dwf\dwf.cs" />
     <Compile Include="dwf\PINVOKE.cs" />
+    <Compile Include="iss\UsbI2C.cs" />
+    <Compile Include="iss\UsbSPI.cs" />
+    <Compile Include="iss\UsbSerial.cs" />
+    <Compile Include="iss\UsbIO.cs" />
+    <Compile Include="iss\UsbISS.cs" />
+    <Compile Include="serial\SerialPortExtensions.cs" />
     <Compile Include="utility\ITimedModification.cs" />
     <Compile Include="utility\Tuple.cs" />
+    <Compile Include="utility\Utility.cs" />
     <Page Include="ui\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

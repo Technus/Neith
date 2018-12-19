@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+#pragma warning disable IDE1006 // Naming Styles
 namespace Neith.utility
 {
     public abstract class Tuple1<X>
@@ -21,3 +22,4 @@ namespace Neith.utility
         public Z z { get; set; }
     }
 }
+#pragma warning restore IDE1006 // Naming Styles
