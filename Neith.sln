@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Express 15 for Windows Desktop
 VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tester", "Neith\Tester.csproj", "{35FDAD0B-AB88-4EB0-8AE1-DAC4DB5DDA08}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tester", "Tester\Tester.csproj", "{35FDAD0B-AB88-4EB0-8AE1-DAC4DB5DDA08}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devices", "NeithCore\Devices.csproj", "{F141052A-3485-4EA3-821D-340C0C5BB667}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devices", "Devices\Devices.csproj", "{F141052A-3485-4EA3-821D-340C0C5BB667}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Viewer", "NeithViewer\Viewer.csproj", "{02671F5F-347A-4A4F-A6B9-78493CE82BE8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Viewer", "Viewer\Viewer.csproj", "{02671F5F-347A-4A4F-A6B9-78493CE82BE8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "NeithBackend\Core.csproj", "{EE00787A-A8D4-4EBD-847B-5CA0166949E0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{EE00787A-A8D4-4EBD-847B-5CA0166949E0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
