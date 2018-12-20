@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO.Ports;
 using System.Text;
+using System.Threading;
 using NeithDevices.serial;
 
 namespace NeithDevices.iss
@@ -22,10 +24,7 @@ namespace NeithDevices.iss
 
             foreach(string name in GetPortNames())
             {
-                UsbISS port = new UsbISS(name)
-                {
-                    ReadTimeout = 1000
-                };
+                UsbISS port = new UsbISS(name);
 
                 try
                 {
@@ -47,29 +46,32 @@ namespace NeithDevices.iss
 
         public UsbISS(string name) : base(name)
         {
-            ReadTimeout = 1000;
+            ReadTimeout = 1500;
+            WriteTimeout = 1000;
         }
 
         public Version ReadVersion()
         {
-            DiscardInBuffer();
-            this.Write(CommandPrefixISS.USB_ISS,CommandISS.ISS_VER);
             try
             {
+                DiscardInBuffer();
+                this.Write(CommandPrefixISS.USB_ISS, CommandISS.ISS_VER);
                 return new Version(this.Read(3));
             }
             catch(TimeoutException)
             {
+                DiscardInBuffer();
+                DiscardOutBuffer();
                 return null;
             }
         }
 
         public string ReadSerialNumber()
         {
-            DiscardInBuffer();
-            this.Write(CommandPrefixISS.USB_ISS, CommandISS.GET_SER_NUM);
             try
             {
+                DiscardInBuffer();
+                this.Write(CommandPrefixISS.USB_ISS, CommandISS.GET_SER_NUM);
                 string serial = Encoding.UTF8.GetString(this.Read(8));
                 foreach (char c in serial)
                 {
@@ -82,6 +84,8 @@ namespace NeithDevices.iss
             }
             catch(TimeoutException)
             {
+                DiscardInBuffer();
+                DiscardOutBuffer();
                 return null;
             }
         }
@@ -101,7 +105,15 @@ namespace NeithDevices.iss
             {
                 bytes[i] = paramaters[j];
             }
-            this.Write(bytes);
+            try
+            {
+                this.Write(bytes);
+            }
+            catch (TimeoutException)
+            {
+                DiscardInBuffer();
+                DiscardOutBuffer();
+            }
             return ReadMode();
         }
 
@@ -110,14 +122,16 @@ namespace NeithDevices.iss
             TypeIO io3 = TypeIO.DIGITAL_INPUT, TypeIO io4 = TypeIO.DIGITAL_INPUT)
         {
             byte val = (byte)((byte)io1 | ((byte)io2 << 2) | ((byte)io3 << 4) | ((byte)io4 << 6));
-            DiscardInBuffer();
-            this.Write(CommandPrefixISS.USB_ISS, CommandISS.ISS_MODE, Mode.IO_CHANGE, val);
             try
             {
+                DiscardInBuffer();
+                this.Write(CommandPrefixISS.USB_ISS, CommandISS.ISS_MODE, Mode.IO_CHANGE, val);
                 return ReadByte() == 0xFF && ReadByte() == 0x00;
             }
             catch (TimeoutException)
             {
+                DiscardInBuffer();
+                DiscardOutBuffer();
                 return false;
             }
         }
@@ -126,14 +140,16 @@ namespace NeithDevices.iss
             TypeIO io3 = TypeIO.DIGITAL_INPUT, TypeIO io4 = TypeIO.DIGITAL_INPUT)
         {
             byte val = (byte)((byte)io1 | ((byte)io2 << 2) | ((byte)io3 << 4) | ((byte)io4 << 6));
-            DiscardInBuffer();
-            this.Write(CommandPrefixISS.USB_ISS, CommandISS.ISS_MODE, Mode.IO, val);
             try
             {
+                DiscardInBuffer();
+                this.Write(CommandPrefixISS.USB_ISS, CommandISS.ISS_MODE, Mode.IO, val);
                 return ReadByte() == 0xFF && ReadByte() == 0x00;
             }
             catch (TimeoutException)
             {
+                DiscardInBuffer();
+                DiscardOutBuffer();
                 return false;
             }
         }
@@ -146,29 +162,33 @@ namespace NeithDevices.iss
             {
                 return false;
             }
-            DiscardInBuffer();
-            this.Write(CommandPrefixISS.USB_ISS, CommandISS.ISS_MODE, Mode.SERIAL, (byte)((baudRate >> 8)&0xff), (byte)(baudRate&0xFF), val);
             try
             {
+                DiscardInBuffer();
+                this.Write(CommandPrefixISS.USB_ISS, CommandISS.ISS_MODE, Mode.SERIAL, (byte)((baudRate >> 8) & 0xff), (byte)(baudRate & 0xFF), val);
                 return ReadByte() == 0xFF && ReadByte() == 0x00;
             }
             catch (TimeoutException)
             {
+                DiscardInBuffer();
+                DiscardOutBuffer();
                 return false;
             }
         }
 
-        public bool WriteModeI2C(ModeI2C i2c=ModeI2C.I2C_H_100KHZ, TypeIO io1 = TypeIO.DIGITAL_INPUT, TypeIO io2 = TypeIO.DIGITAL_INPUT)
+        public bool WriteModeI2C(ModeI2C i2c=ModeI2C.I2C_S_100KHZ, TypeIO io1 = TypeIO.DIGITAL_INPUT, TypeIO io2 = TypeIO.DIGITAL_INPUT)
         {
             byte val = (byte)(((byte)io1) | ((byte)io2 << 2));
-            DiscardInBuffer();
-            this.Write(CommandPrefixISS.USB_ISS, CommandISS.ISS_MODE, i2c, val);
             try
             {
+                DiscardInBuffer();
+                this.Write(CommandPrefixISS.USB_ISS, CommandISS.ISS_MODE, i2c, val);
                 return ReadByte() == 0xFF && ReadByte() == 0x00;
             }
             catch (TimeoutException)
             {
+                DiscardInBuffer();
+                DiscardOutBuffer();
                 return false;
             }
         }
@@ -180,14 +200,16 @@ namespace NeithDevices.iss
             {
                 return false;
             }
-            DiscardInBuffer();
-            this.Write(CommandPrefixISS.USB_ISS, CommandISS.ISS_MODE, (byte)i2c|(byte)Mode.SERIAL, (byte)((baudRate >> 8) & 0xff), (byte)(baudRate & 0xFF));
             try
             {
+                DiscardInBuffer();
+                this.Write(CommandPrefixISS.USB_ISS, CommandISS.ISS_MODE, (byte)i2c|(byte)Mode.SERIAL, (byte)((baudRate >> 8) & 0xff), (byte)(baudRate & 0xFF));
                 return ReadByte() == 0xFF && ReadByte() == 0x00;
             }
             catch (TimeoutException)
             {
+                DiscardInBuffer();
+                DiscardOutBuffer();
                 return false;
             }
         }
@@ -195,14 +217,16 @@ namespace NeithDevices.iss
         public bool WriteModeSPI(ModeSPI spi=ModeSPI.SPI_MODE_TX_ACTIVE_TO_IDLE_LOW,int sckFrequency=500000)
         {
             sckFrequency = (6000000 / sckFrequency) - 1;
-            DiscardInBuffer();
-            this.Write(CommandPrefixISS.USB_ISS, CommandISS.ISS_MODE, spi,(byte)sckFrequency);
             try
             {
+                DiscardInBuffer();
+                this.Write(CommandPrefixISS.USB_ISS, CommandISS.ISS_MODE, spi,(byte)sckFrequency);
                 return ReadByte() == 0xFF && ReadByte() == 0x00;
             }
             catch (TimeoutException)
             {
+                DiscardInBuffer();
+                DiscardOutBuffer();
                 return false;
             }
         }
@@ -270,8 +294,8 @@ namespace NeithDevices.iss
         I2C_S_20KHZ = Mode.I2C_S_20KHZ,      // Software I2C (bit-bashed) modes //ALL I2C SDA SCL 2xGPIO
         I2C_S_50KHZ = Mode.I2C_S_50KHZ,
         I2C_S_100KHZ = Mode.I2C_S_100KHZ,
-        I2C_S_400KHZ = Mode.I2C_S_400KHZ,
         I2C_H_100KHZ = Mode.I2C_H_100KHZ,        // Hardware I2C peripheral modes
+        I2C_S_400KHZ = Mode.I2C_S_400KHZ,
         I2C_H_400KHZ = Mode.I2C_H_400KHZ,
         I2C_H_1000KHZ = Mode.I2C_H_1000KHZ,
     }

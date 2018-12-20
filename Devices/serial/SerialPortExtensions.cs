@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO.Ports;
+using System.Threading;
 
 namespace NeithDevices.serial
 {
@@ -26,6 +27,19 @@ namespace NeithDevices.serial
         //     No bytes were available to read.
         public static void Read(this SerialPort port, byte[] bytes)
         {
+            Thread t = new Thread(()=>
+            {
+                try
+                {
+                    while (port.BytesToRead < bytes.Length)
+                    {
+                        Thread.Sleep(10);
+                    }
+                }
+                catch { }
+            });
+            t.Start();
+            t.Join(port.ReadTimeout);
             port.Read(bytes, 0, bytes.Length);
         }
 

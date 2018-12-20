@@ -23,6 +23,7 @@ namespace NeithViewer.ui
         public MainWindow()
         {
             InitializeComponent();
+            Application.Current.Shutdown();
         }
     }
 }

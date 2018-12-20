@@ -18,6 +18,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Reflection;
+using NeithDevices;
 
 namespace NeithTester.ui
 {
@@ -32,7 +33,9 @@ namespace NeithTester.ui
         {
             InitializeComponent();
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(HandleError);
-            
+            TemporaryClass.Run();
+
+            Application.Current.Shutdown();
         }
 
         public static void HandleError(Object sender, UnhandledExceptionEventArgs e)

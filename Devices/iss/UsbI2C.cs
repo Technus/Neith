@@ -15,14 +15,16 @@ namespace NeithDevices.iss
             {
                 case QuadState.True:
                     {
-                        DiscardInBuffer();
-                        this.Write(CommandPrefixI2C.I2C_TEST, address);
                         try
                         {
+                            DiscardInBuffer();
+                            this.Write(CommandPrefixI2C.I2C_TEST, address);
                             return ReadByte() != 0x00? QuadState.True: QuadState.False;
                         }
                         catch(TimeoutException)
                         {
+                            DiscardInBuffer();
+                            DiscardOutBuffer();
                             return QuadState.Null;
                         }
                     }
@@ -35,6 +37,8 @@ namespace NeithDevices.iss
                         }
                         catch(TimeoutException)
                         {
+                            DiscardInBuffer();
+                            DiscardOutBuffer();
                             TestPresenceCapable = QuadState.Null;
                         }
                         return TestPresenceI2C(address);
@@ -45,27 +49,31 @@ namespace NeithDevices.iss
 
         public byte? ReadOneI2C(byte address) 
         {
-            DiscardInBuffer();
-            this.Write(CommandPrefixI2C.I2C_SGL, address|(byte)DirectionI2C.ReadBit);
             try
             {
+                DiscardInBuffer();
+                this.Write(CommandPrefixI2C.I2C_SGL, address|(byte)DirectionI2C.ReadBit);
                 return (byte)ReadByte();
             }
-            catch
+            catch(TimeoutException)
             {
+                DiscardInBuffer();
+                DiscardOutBuffer();
                 return null;
             }
         }
 
         public bool WriteOneI2C(byte address,byte value)
         {
-            this.Write(CommandPrefixI2C.I2C_SGL, address & (byte)DirectionI2C.WriteMask, value);
             try
             {
+                this.Write(CommandPrefixI2C.I2C_SGL, address & (byte)DirectionI2C.WriteMask, value);
                 return ReadByte() == 0?false:true;
             }
             catch
             {
+                DiscardInBuffer();
+                DiscardOutBuffer();
                 return false;
             }
         }
