@@ -31,7 +31,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>neith_spacepedia_H51_icon.ico</ApplicationIcon>
@@ -58,15 +58,9 @@
     <Compile Include="iss\UsbISS.cs" />
     <Compile Include="iss\UsbSerial.cs" />
     <Compile Include="iss\UsbSPI.cs" />
-    <Compile Include="mongo\poco\StackTraceElement.cs" />
-    <Compile Include="mongo\poco\SystemUser.cs" />
-    <Compile Include="mongo\poco\ThreadLog.cs" />
-    <Compile Include="mongo\poco\ThrowableLog.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="serial\SerialPortExtensions.cs" />
-    <Compile Include="utility\ITimedModification.cs" />
-    <Compile Include="utility\Tuple.cs" />
-    <Compile Include="utility\Utility.cs" />
+    <Compile Include="TemporaryClass.cs" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="NIDAQmxCAPI">
@@ -80,15 +74,16 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="test\" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="MongoDB.Driver">
-      <Version>2.7.2</Version>
-    </PackageReference>
+    <Folder Include="signalTester\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="neith_spacepedia_H51_icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NeithBackend\Core.csproj">
+      <Project>{ee00787a-a8d4-4ebd-847b-5ca0166949e0}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

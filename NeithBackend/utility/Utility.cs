@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 namespace NeithCore.utility
 {
-    enum QuadState : byte { False, True, Unknown, Null }
-    enum TriState : byte { False, True, UnknownOrNull }
+    public enum QuadState : byte { False, True, Unknown, Null }
+    public enum TriState : byte { False, True, UnknownOrNull }
 }

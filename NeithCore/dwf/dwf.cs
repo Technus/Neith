@@ -1,4 +1,4 @@
-namespace NeithCore.DigilentWaveForms
+namespace NeithDevices.DigilentWaveForms
 {
     public class Base
     {

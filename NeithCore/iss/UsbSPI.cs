@@ -6,16 +6,16 @@ using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Neith.serial;
+using NeithDevices.serial;
 
-namespace NeithCore.iss
+namespace NeithDevices.iss
 {
-    partial class UsbISS : SerialPort
+    public partial class UsbISS : SerialPort
     {
 
     }
 
-    enum CommandPrefixSPI : byte
+    public enum CommandPrefixSPI : byte
     {
         SPI_IO = 0x61,          // SPI I/O
     };

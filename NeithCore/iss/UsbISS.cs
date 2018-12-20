@@ -6,13 +6,13 @@ using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Neith.serial;
+using NeithDevices.serial;
 
-namespace NeithCore.iss
+namespace NeithDevices.iss
 {
 
     [System.ComponentModel.DesignerCategory("Code")]
-    partial class UsbISS : SerialPort
+    public partial class UsbISS : SerialPort
     {
         private static Dictionary<string, UsbISS> AttachedDevices = new Dictionary<string, UsbISS>();
         public static ReadOnlyDictionary<string, UsbISS> GetAttachedISS()
@@ -211,7 +211,7 @@ namespace NeithCore.iss
         }
     }
 
-    class Version
+    public class Version
     {
         public readonly byte ID;
         public readonly byte FirmwareVersion;
@@ -231,19 +231,19 @@ namespace NeithCore.iss
         }
     }
 
-    enum CommandPrefixISS : byte
+    public enum CommandPrefixISS : byte
     {
         USB_ISS = 0x5A,         // 
     };
 
-    enum CommandISS : byte
+    public enum CommandISS : byte
     {
         ISS_VER = 0x01,         // returns version num, 1 byte
         ISS_MODE = 0x02,        // returns ACK, NACK, 1 byte
         GET_SER_NUM = 0x03,
     }
 
-    enum Mode : byte
+    public enum Mode : byte
     {
         IO = 0x00,             //4x GPIO
         SERIAL = 0x01,              //Rx Tx 2xGPIO
@@ -268,7 +268,7 @@ namespace NeithCore.iss
         SERIAL_I2C_H_1000KHZ = 0x81,
     };
 
-    enum ModeI2C : byte
+    public enum ModeI2C : byte
     {
         I2C_S_20KHZ = Mode.I2C_S_20KHZ,      // Software I2C (bit-bashed) modes //ALL I2C SDA SCL 2xGPIO
         I2C_S_50KHZ = Mode.I2C_S_50KHZ,
@@ -279,7 +279,7 @@ namespace NeithCore.iss
         I2C_H_1000KHZ = Mode.I2C_H_1000KHZ,
     }
 
-    enum ModeSPI : byte
+    public enum ModeSPI : byte
     {
         SPI_MODE_TX_ACTIVE_TO_IDLE_LOW = 0x90,
         SPI_MODE_TX_ACTIVE_TO_IDLE_HIGH = 0x91,
@@ -287,7 +287,7 @@ namespace NeithCore.iss
         SPI_MODE_TX_IDLE_HIGH_TO_ACTIVE = 0x93,
     }
 
-    enum TypeIO : byte
+    public enum TypeIO : byte
     {
         OUTPUT_LOW=0x00,
         OUTPUT_HIGH=0x01,

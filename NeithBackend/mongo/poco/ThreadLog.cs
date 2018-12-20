@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NeithCore.MongoDB.poco
 {
-    class ThreadLog
+    public class ThreadLog
     {
         [BsonIgnoreIfNull]
         public readonly string name;

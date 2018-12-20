@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NeithCore.MongoDB.poco
 {
-    class SystemUser
+    public class SystemUser
     {
         [BsonIgnoreIfNull]
         public readonly string domainName, userName, systemName;

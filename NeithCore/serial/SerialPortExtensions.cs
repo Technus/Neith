@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NeithCore.serial
+namespace NeithDevices.serial
 {
-    static class SerialPortExtensions
+    public static class SerialPortExtensions
     {
         private static readonly CultureInfo cultureInfo = new CultureInfo("en-US");
 

@@ -1,10 +1,12 @@
-﻿<Window x:Class="NeithTester.ui.MainWindow"
+﻿<Window x:Class="NeithViewer.ui.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Neith"
+        xmlns:local="clr-namespace:NeithViewer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="749.785" Visibility="Visible" Background="Black">
-    <ProgressBar HorizontalAlignment="Left" Height="10" Margin="381,223,0,0" VerticalAlignment="Top" Width="100"/>
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        
+    </Grid>
 </Window>

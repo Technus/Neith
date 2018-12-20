@@ -4,12 +4,12 @@ using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NeithCore.serial;
+using NeithDevices.serial;
 using NeithCore.utility;
 
-namespace NeithCore.iss
+namespace NeithDevices.iss
 {
-    partial class UsbISS : SerialPort
+    public partial class UsbISS : SerialPort
     {
         private QuadState TestPresenceCapable = QuadState.Unknown;
 
@@ -75,22 +75,22 @@ namespace NeithCore.iss
         }
     }
 
-    class DirectI2C
+    public class DirectI2C
     {
 
     }
 
-    class PacketI2C
+    public class PacketI2C
     {
 
     }
 
-    class ResponseI2C
+    public class ResponseI2C
     {
 
     }
 
-    enum CommandPrefixI2C : byte
+    public enum CommandPrefixI2C : byte
     {
         I2C_SGL=0x53,       // Read/Write single byte for non-registered devices
         I2C_AD0=0x54,       // Read/Write multiple bytes for devices without internal address or where address does not require resetting
@@ -101,7 +101,7 @@ namespace NeithCore.iss
     }
 
     // I2C DIRECT commands
-    enum CommandDirectI2C : byte
+    public enum CommandDirectI2C : byte
     {
         I2CSRP = 0x00,          // Start/Stop Codes - 0x01=start, 0x02=restart, 0x03=stop, 0x04=nack
         I2CSTART,               // send start sequence

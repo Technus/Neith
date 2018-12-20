@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace NeithCore.DigilentWaveForms
+namespace NeithDevices.DigilentWaveForms
 {
     static class PINVOKE
     {

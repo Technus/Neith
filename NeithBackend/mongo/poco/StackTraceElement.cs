@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace NeithCore.MongoDB.poco
 {
-    class StackTraceElement
+    public class StackTraceElement
     {
         [BsonIgnoreIfNull]
         public readonly string declaringClass,methodName,fileName;
