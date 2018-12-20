@@ -1,5 +1,5 @@
-﻿using Neith.iss;
-using Neith.MongoDB.poco;
+﻿using NeithCore.iss;
+using NeithCore.MongoDB.poco;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

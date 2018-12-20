@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Neith", "Neith\Neith.csproj", "{35FDAD0B-AB88-4EB0-8AE1-DAC4DB5DDA08}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeithCore", "NeithCore\NeithCore.csproj", "{F141052A-3485-4EA3-821D-340C0C5BB667}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{35FDAD0B-AB88-4EB0-8AE1-DAC4DB5DDA08}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35FDAD0B-AB88-4EB0-8AE1-DAC4DB5DDA08}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35FDAD0B-AB88-4EB0-8AE1-DAC4DB5DDA08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F141052A-3485-4EA3-821D-340C0C5BB667}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F141052A-3485-4EA3-821D-340C0C5BB667}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F141052A-3485-4EA3-821D-340C0C5BB667}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F141052A-3485-4EA3-821D-340C0C5BB667}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
