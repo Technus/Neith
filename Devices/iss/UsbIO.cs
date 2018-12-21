@@ -1,11 +1,85 @@
 ﻿using RJCP.IO.Ports;
-using System.IO.Ports;
+using NeithDevices.serial;
+using System;
 
 namespace NeithDevices.iss
 {
     public partial class UsbISS : SerialPortStream
     {
+        public bool WritePinsIO(bool io1 = false, bool io2 = false,
+            bool io3 = false, bool io4 = false)
+        {
+            int value = 0;
+            value |= io1 ? 0x01:0;
+            value |= io2 ? 0x02:0;
+            value |= io3 ? 0x04:0;
+            value |= io4 ? 0x08:0;
+            return WritePinsIO((byte)value);
+        }
 
+        public bool WritePinsIO(byte io = 0)
+        {
+            try
+            {
+                this.Write(CommandPrefixIO.SETPINS, io);
+                return ReadByte() == 0 ? false : true;
+            }
+            catch(TimeoutException)
+            {
+                DiscardInBuffer();
+                DiscardOutBuffer();
+                return false;
+            }
+        }
+
+        public byte? ReadBytePinsIO()
+        {
+            try
+            {
+                this.Write(CommandPrefixIO.GETPINS);
+                return (byte)ReadByte();
+            }
+            catch (TimeoutException)
+            {
+                DiscardInBuffer();
+                DiscardOutBuffer();
+                return null;
+            }
+        }
+
+        public bool[] ReadPinsIO()
+        {
+            byte? read = ReadBytePinsIO();
+            if (read == null)
+            {
+                return null;
+            }
+            else
+            {
+                return new bool[]
+                {
+                    (read.Value&0x01)!=0,
+                    (read.Value&0x02)!=0,
+                    (read.Value&0x04)!=0,
+                    (read.Value&0x08)!=0,
+                };
+            }
+        }
+
+        public int? ReadPinAnalog(byte pinNumber)
+        {
+            try
+            {
+                this.Write(CommandPrefixIO.GETAD,pinNumber);
+                return (ReadByte()<<8)|ReadByte();
+            }
+            catch (TimeoutException)
+            {
+                DiscardInBuffer();
+                DiscardOutBuffer();
+                return null;
+            }
+        }
     }
 
     public enum CommandPrefixIO : byte

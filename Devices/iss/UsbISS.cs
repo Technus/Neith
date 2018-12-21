@@ -29,11 +29,12 @@ namespace NeithDevices.iss
 
                 try
                 {
-                    port.Open();
+                    port.OpenDirect();
                 }
                 catch(Exception ex) when (ex is InvalidOperationException || ex is UnauthorizedAccessException)
                 {
                     port.Dispose();
+                    continue;
                 }
                 try
                 {
@@ -63,7 +64,10 @@ namespace NeithDevices.iss
 
         ~UsbISS()
         {
-            Close();
+            if (IsOpen)
+            {
+                Close();
+            }
         }
 
         public Version ReadVersion()

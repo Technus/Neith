@@ -1,4 +1,5 @@
 ﻿using NeithDevices.iss;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -14,7 +15,8 @@ namespace NeithDevices
             foreach (var entry in iss)
             {
                 Debug.Print(string.Join(" ", entry.Key));
-                Debug.Print(string.Join(" ", entry.Value.PresentAddressesI2C()));
+                Debug.Print(BitConverter.ToString(System.Linq.Enumerable.ToArray(entry.Value.PresentValidAddresses7BitI2C())));
+                Debug.Print(BitConverter.ToString(System.Linq.Enumerable.ToArray(entry.Value.PresentValidAddresses8BitI2C())));
             }
         }
     }

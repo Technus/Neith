@@ -10,8 +10,6 @@ namespace NeithDevices.iss
 {
     public partial class UsbISS : SerialPortStream
     {
-        private static readonly PacketI2C testPacket = new PacketI2C().AppendStart().AppendStop();
-
         private QuadState TestPresenceCapable = QuadState.Unknown;
 
         public QuadState TestPresenceI2C(byte address)
@@ -50,28 +48,45 @@ namespace NeithDevices.iss
                     }
                 default:
                     {
-                        return SendCustomPacketI2C(testPacket) == null?QuadState.True:QuadState.Unknown;
+                        return SendCustomPacketI2C(new PacketI2C().AppendStart().AppendWrite(new IConvertible[] {address}).AppendStop()) == null?QuadState.True:QuadState.Unknown;
                     }
             }
         }
 
-        public QuadState[] TestPresenceI2C()
+        public HashSet<byte> PresentAddresses8BitI2C()
         {
-            QuadState[] states = new QuadState[128];
-            for(int i = 0,j=1; i < states.Length; i++,j+=2)
+            HashSet<byte> states = new HashSet<byte>();
+            for (int i = 0; i <= 255; i++)
             {
-                states[i] = TestPresenceI2C((byte)j);
+                if (TestPresenceI2C((byte)i) == QuadState.True)
+                {
+                    states.Add((byte)i);
+                }
             }
             return states;
         }
-        public List<byte> PresentAddressesI2C()
+
+        public HashSet<byte> PresentValidAddresses8BitI2C()
         {
-            List<byte> states = new List<byte>();
-            for (int i = 0, j = 1; i < 128; i++, j += 2)
+            HashSet<byte> states = new HashSet<byte>();
+            for (int i = (0x08<<1); i <=(0x77<<1); i+=2)
             {
-                if(TestPresenceI2C((byte)j) == QuadState.True)
+                if (TestPresenceI2C((byte)i) == QuadState.True)
                 {
-                    states.Add((byte)j);
+                    states.Add((byte)i);
+                }
+            }
+            return states;
+        }
+
+        public HashSet<byte> PresentValidAddresses7BitI2C()
+        {
+            HashSet<byte> states = new HashSet<byte>();
+            for (int i = (0x08 << 1); i <= (0x77 << 1); i += 2)
+            {
+                if (TestPresenceI2C((byte)i) == QuadState.True)
+                {
+                    states.Add((byte)(i>>1));
                 }
             }
             return states;
@@ -100,7 +115,7 @@ namespace NeithDevices.iss
                 this.Write(CommandPrefixI2C.I2C_SGL, address & (byte)DirectionI2C.WriteMask, value);
                 return ReadByte() == 0?false:true;
             }
-            catch
+            catch (TimeoutException)
             {
                 DiscardInBuffer();
                 DiscardOutBuffer();
@@ -146,7 +161,7 @@ namespace NeithDevices.iss
                 this.Write(bytes);
                 return ReadByte() == 0 ? false : true;
             }
-            catch
+            catch (TimeoutException)
             {
                 DiscardInBuffer();
                 DiscardOutBuffer();
@@ -193,7 +208,7 @@ namespace NeithDevices.iss
                 this.Write(bytes);
                 return ReadByte() == 0 ? false : true;
             }
-            catch
+            catch (TimeoutException)
             {
                 DiscardInBuffer();
                 DiscardOutBuffer();
@@ -241,7 +256,7 @@ namespace NeithDevices.iss
                 this.Write(bytes);
                 return ReadByte() == 0 ? false : true;
             }
-            catch
+            catch (TimeoutException)
             {
                 DiscardInBuffer();
                 DiscardOutBuffer();
@@ -327,7 +342,7 @@ namespace NeithDevices.iss
                     return (FailureDirectI2C)ReadByte();
                 }
             }
-            catch
+            catch (TimeoutException)
             {
                 DiscardInBuffer();
                 DiscardOutBuffer();
@@ -335,8 +350,6 @@ namespace NeithDevices.iss
             }
         }
     }
-
-
 
     public class PacketI2C
     {
