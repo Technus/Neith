@@ -1,4 +1,6 @@
-﻿using System;
+﻿using RJCP.IO.Ports;
+using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Ports;
 using System.Threading;
@@ -7,7 +9,7 @@ namespace NeithDevices.serial
 {
     public static class SerialPortExtensions
     {
-        private static readonly CultureInfo cultureInfo = new CultureInfo("en-US");
+        public static readonly CultureInfo cultureInfo = new CultureInfo("en-US");
 
         // Exceptions:
         //   T:System.ArgumentNullException:
@@ -25,7 +27,7 @@ namespace NeithDevices.serial
         //
         //   T:System.TimeoutException:
         //     No bytes were available to read.
-        public static void Read(this SerialPort port, byte[] bytes)
+        public static void Read(this SerialPortStream port, byte[] bytes)
         {
             Thread t = new Thread(()=>
             {
@@ -59,7 +61,7 @@ namespace NeithDevices.serial
         //
         //   T:System.TimeoutException:
         //     No bytes were available to read.
-        public static byte[] Read(this SerialPort port, int count)
+        public static byte[] Read(this SerialPortStream port, int count)
         {
             byte[] bytes = new byte[count];
             port.Read(bytes);
@@ -82,7 +84,7 @@ namespace NeithDevices.serial
         //
         //   T:System.ServiceProcess.TimeoutException:
         //     The operation did not complete before the time-out period ended.
-        public static void Write<T>(this SerialPort port, params T[] enums) where T : IConvertible
+        public static void Write<T>(this SerialPortStream port, params T[] enums) where T : IConvertible
         {
             byte[] bytes = new byte[enums.Length];
             for (int i = 0; i < bytes.Length; i++)
@@ -108,7 +110,7 @@ namespace NeithDevices.serial
         //
         //   T:System.ServiceProcess.TimeoutException:
         //     The operation did not complete before the time-out period ended.
-        public static void Write(this SerialPort port, params IConvertible[] enums)
+        public static void Write(this SerialPortStream port, params IConvertible[] enums)
         {
             port.Write<IConvertible>(enums);
         }

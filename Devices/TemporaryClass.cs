@@ -11,12 +11,11 @@ namespace NeithDevices
             Debug.Print(string.Join(" ", OpenLayers.Base.DeviceMgr.Get().GetDeviceNames()));
 
             var iss = UsbISS.GetAttachedISS();
-            List<string> names = new List<string>();
             foreach (var entry in iss)
             {
-                names.Add(entry.Key);
+                Debug.Print(string.Join(" ", entry.Key));
+                Debug.Print(string.Join(" ", entry.Value.PresentAddressesI2C()));
             }
-            Debug.Print(string.Join(" ", names));
         }
     }
 }

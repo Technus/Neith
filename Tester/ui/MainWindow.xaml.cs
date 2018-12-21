@@ -32,9 +32,15 @@ namespace NeithTester.ui
         public MainWindow()
         {
             InitializeComponent();
-            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(HandleError);
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(HandleUnhandledError);
             TemporaryClass.Run();
 
+            Application.Current.Shutdown();
+        }
+
+        public static void HandleUnhandledError(Object sender, UnhandledExceptionEventArgs e)
+        {
+            HandleError(sender, e);
             Application.Current.Shutdown();
         }
 

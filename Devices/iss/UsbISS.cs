@@ -6,12 +6,13 @@ using System.IO.Ports;
 using System.Text;
 using System.Threading;
 using NeithDevices.serial;
+using RJCP.IO.Ports;
 
 namespace NeithDevices.iss
 {
 
     [System.ComponentModel.DesignerCategory("Code")]
-    public partial class UsbISS : SerialPort
+    public partial class UsbISS : SerialPortStream
     {
         private static Dictionary<string, UsbISS> AttachedDevices = new Dictionary<string, UsbISS>();
         public static ReadOnlyDictionary<string, UsbISS> GetAttachedISS()
@@ -29,14 +30,24 @@ namespace NeithDevices.iss
                 try
                 {
                     port.Open();
+                }
+                catch(Exception ex) when (ex is InvalidOperationException || ex is UnauthorizedAccessException)
+                {
+                    port.Dispose();
+                }
+                try
+                {
                     string serial = port.ReadSerialNumber();
-                    port.Close();
                     if (serial != null)
                     {
                         AttachedDevices.Add(serial, port);
                     }
+                    else
+                    {
+                        port.Close();
+                    }
                 }
-                catch
+                catch(TimeoutException)
                 {
                     port.Close();
                 }
@@ -48,6 +59,11 @@ namespace NeithDevices.iss
         {
             ReadTimeout = 1500;
             WriteTimeout = 1000;
+        }
+
+        ~UsbISS()
+        {
+            Close();
         }
 
         public Version ReadVersion()
@@ -96,7 +112,7 @@ namespace NeithDevices.iss
             return version!=null?version.OperatingMode:(Mode?)null;
         }
 
-        public Mode? WriteMode(Mode mode, params IConvertible[] paramaters)
+        public Mode? WriteMode(Mode mode, params byte[] paramaters)
         {
             IConvertible[] bytes = new IConvertible[2 + paramaters.Length];
             bytes[0]=CommandPrefixISS.USB_ISS;
