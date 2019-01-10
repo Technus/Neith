@@ -1,9 +1,8 @@
-﻿using RJCP.IO.Ports;
-using System.IO.Ports;
+﻿using NeithDevices.serial;
 
 namespace NeithDevices.iss
 {
-    public partial class UsbISS : SerialPortStream
+    public partial class UsbISS : SerialPort
     {
 
     }

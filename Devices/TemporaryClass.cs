@@ -1,6 +1,7 @@
-﻿using NeithDevices.iss;
+﻿using HidLibrary;
+using NeithDevices.hid;
+using NeithDevices.iss;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace NeithDevices
@@ -14,9 +15,15 @@ namespace NeithDevices
             var iss = UsbISS.GetAttachedISS();
             foreach (var entry in iss)
             {
-                Debug.Print(string.Join(" ", entry.Key));
+                Debug.Print(entry.Key);
                 Debug.Print(BitConverter.ToString(System.Linq.Enumerable.ToArray(entry.Value.PresentValidAddresses7BitI2C())));
                 Debug.Print(BitConverter.ToString(System.Linq.Enumerable.ToArray(entry.Value.PresentValidAddresses8BitI2C())));
+            }
+
+            foreach (var hidDevice in HidDevices.Enumerate())
+            {
+                Debug.Print(hidDevice.Description +" "+hidDevice.GetProduct()+" "+hidDevice.GetManufacturer()+ " ");
+                Debug.Print(hidDevice.GetVID() + " " + hidDevice.GetPID()+" "+hidDevice.GetUUID()+ " "+hidDevice.DevicePath);
             }
         }
     }

@@ -1,10 +1,9 @@
-﻿using RJCP.IO.Ports;
-using NeithDevices.serial;
+﻿using NeithDevices.serial;
 using System;
 
 namespace NeithDevices.iss
 {
-    public partial class UsbISS : SerialPortStream
+    public partial class UsbISS : SerialPort
     {
         public bool WritePinsIO(bool io1 = false, bool io2 = false,
             bool io3 = false, bool io4 = false)
@@ -22,12 +21,12 @@ namespace NeithDevices.iss
             try
             {
                 this.Write(CommandPrefixIO.SETPINS, io);
-                return ReadByte() == 0 ? false : true;
+                return this.ReadByte() == 0 ? false : true;
             }
             catch(TimeoutException)
             {
-                DiscardInBuffer();
-                DiscardOutBuffer();
+                this.DiscardInBuffer();
+                this.DiscardOutBuffer();
                 return false;
             }
         }
@@ -37,12 +36,12 @@ namespace NeithDevices.iss
             try
             {
                 this.Write(CommandPrefixIO.GETPINS);
-                return (byte)ReadByte();
+                return (byte)this.ReadByte();
             }
             catch (TimeoutException)
             {
-                DiscardInBuffer();
-                DiscardOutBuffer();
+                this.DiscardInBuffer();
+                this.DiscardOutBuffer();
                 return null;
             }
         }
@@ -71,12 +70,12 @@ namespace NeithDevices.iss
             try
             {
                 this.Write(CommandPrefixIO.GETAD,pinNumber);
-                return (ReadByte()<<8)|ReadByte();
+                return (this.ReadByte()<<8)| this.ReadByte();
             }
             catch (TimeoutException)
             {
-                DiscardInBuffer();
-                DiscardOutBuffer();
+                this.DiscardInBuffer();
+                this.DiscardOutBuffer();
                 return null;
             }
         }

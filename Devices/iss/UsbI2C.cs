@@ -1,56 +1,32 @@
 ﻿using System;
-using System.IO.Ports;
 using NeithDevices.serial;
 using NeithCore.utility;
 using System.Collections.Generic;
-using System.Diagnostics;
-using RJCP.IO.Ports;
 
 namespace NeithDevices.iss
 {
-    public partial class UsbISS : SerialPortStream
+    public partial class UsbISS : SerialPort
     {
-        private QuadState TestPresenceCapable = QuadState.Unknown;
+        private bool TestPresenceCapable;
 
-        public QuadState TestPresenceI2C(byte address)
+        public TriState TestPresenceI2C(byte address)
         {
-            switch (TestPresenceCapable)
+            if (TestPresenceCapable)
             {
-                case QuadState.True:
-                    {
-                        try
-                        {
-                            DiscardInBuffer();
-                            this.Write(CommandPrefixI2C.I2C_TEST, address);
-                            return ReadByte() != 0x00? QuadState.True: QuadState.False;
-                        }
-                        catch(TimeoutException)
-                        {
-                            DiscardInBuffer();
-                            DiscardOutBuffer();
-                            return QuadState.Null;
-                        }
-                    }
-                case QuadState.Unknown:
-                    {
-                        try
-                        {
-                            Version version = ReadVersion();
-                            TestPresenceCapable = version!=null && version.FirmwareVersion >= 5 ? QuadState.True : QuadState.False;
-                        }
-                        catch(TimeoutException)
-                        {
-                            DiscardInBuffer();
-                            DiscardOutBuffer();
-                            TestPresenceCapable = QuadState.Null;
-                        }
-                        return TestPresenceI2C(address);
-                    }
-                default:
-                    {
-                        return SendCustomPacketI2C(new PacketI2C().AppendStart().AppendWrite(new IConvertible[] {address}).AppendStop()) == null?QuadState.True:QuadState.Unknown;
-                    }
+                try
+                {
+                    this.DiscardInBuffer();
+                    this.Write(CommandPrefixI2C.I2C_TEST, address);
+                    return this.ReadByte() != 0x00 ? TriState.True : TriState.False;
+                }
+                catch (TimeoutException)
+                {
+                    this.DiscardInBuffer();
+                    this.DiscardOutBuffer();
+                    return TriState.UnknownOrNull;
+                }
             }
+            return TriState.UnknownOrNull;
         }
 
         public HashSet<byte> PresentAddresses8BitI2C()
@@ -58,7 +34,7 @@ namespace NeithDevices.iss
             HashSet<byte> states = new HashSet<byte>();
             for (int i = 0; i <= 255; i++)
             {
-                if (TestPresenceI2C((byte)i) == QuadState.True)
+                if (TestPresenceI2C((byte)i) == TriState.True)
                 {
                     states.Add((byte)i);
                 }
@@ -71,7 +47,7 @@ namespace NeithDevices.iss
             HashSet<byte> states = new HashSet<byte>();
             for (int i = (0x08<<1); i <=(0x77<<1); i+=2)
             {
-                if (TestPresenceI2C((byte)i) == QuadState.True)
+                if (TestPresenceI2C((byte)i) == TriState.True)
                 {
                     states.Add((byte)i);
                 }
@@ -84,7 +60,7 @@ namespace NeithDevices.iss
             HashSet<byte> states = new HashSet<byte>();
             for (int i = (0x08 << 1); i <= (0x77 << 1); i += 2)
             {
-                if (TestPresenceI2C((byte)i) == QuadState.True)
+                if (TestPresenceI2C((byte)i) == TriState.True)
                 {
                     states.Add((byte)(i>>1));
                 }
@@ -96,14 +72,14 @@ namespace NeithDevices.iss
         {
             try
             {
-                DiscardInBuffer();
+                this.DiscardInBuffer();
                 this.Write(CommandPrefixI2C.I2C_SGL, address|(byte)DirectionI2C.ReadBit);
-                return (byte)ReadByte();
+                return (byte)this.ReadByte();
             }
             catch(TimeoutException)
             {
-                DiscardInBuffer();
-                DiscardOutBuffer();
+                this.DiscardInBuffer();
+                this.DiscardOutBuffer();
                 return null;
             }
         }
@@ -113,12 +89,12 @@ namespace NeithDevices.iss
             try
             {
                 this.Write(CommandPrefixI2C.I2C_SGL, address & (byte)DirectionI2C.WriteMask, value);
-                return ReadByte() == 0?false:true;
+                return this.ReadByte() == 0?false:true;
             }
             catch (TimeoutException)
             {
-                DiscardInBuffer();
-                DiscardOutBuffer();
+                this.DiscardInBuffer();
+                this.DiscardOutBuffer();
                 return false;
             }
         }
@@ -129,19 +105,19 @@ namespace NeithDevices.iss
             return ReadI2C(address, data)?data:null;
         }
 
-        public bool ReadI2C(byte address, params byte[] bytes)
+        public bool ReadI2C(byte address, byte[] bytes)
         {
             try
             {
-                DiscardInBuffer();
+                this.DiscardInBuffer();
                 this.Write(CommandPrefixI2C.I2C_AD0, address | (byte)DirectionI2C.ReadBit, (byte)bytes.Length);
                 this.Read(bytes);
                 return true;
             }
             catch (TimeoutException)
             {
-                DiscardInBuffer();
-                DiscardOutBuffer();
+                this.DiscardInBuffer();
+                this.DiscardOutBuffer();
                 return false;
             }
         }
@@ -159,12 +135,12 @@ namespace NeithDevices.iss
                     bytes[i] = value[j];
                 }
                 this.Write(bytes);
-                return ReadByte() == 0 ? false : true;
+                return this.ReadByte() == 0 ? false : true;
             }
             catch (TimeoutException)
             {
-                DiscardInBuffer();
-                DiscardOutBuffer();
+                this.DiscardInBuffer();
+                this.DiscardOutBuffer();
                 return false;
             }
         }
@@ -175,19 +151,19 @@ namespace NeithDevices.iss
             return ReadI2C(address,internalAddress, data) ? data : null;
         }
 
-        public bool ReadI2C(byte address,byte internalAddress, params byte[] bytes)
+        public bool ReadI2C(byte address,byte internalAddress, byte[] bytes)
         {
             try
             {
-                DiscardInBuffer();
+                this.DiscardInBuffer();
                 this.Write(CommandPrefixI2C.I2C_AD1, address | (byte)DirectionI2C.ReadBit,internalAddress, (byte)bytes.Length);
                 this.Read(bytes);
                 return true;
             }
             catch (TimeoutException)
             {
-                DiscardInBuffer();
-                DiscardOutBuffer();
+                this.DiscardInBuffer();
+                this.DiscardOutBuffer();
                 return false;
             }
         }
@@ -206,12 +182,12 @@ namespace NeithDevices.iss
                     bytes[i] = value[j];
                 }
                 this.Write(bytes);
-                return ReadByte() == 0 ? false : true;
+                return this.ReadByte() == 0 ? false : true;
             }
             catch (TimeoutException)
             {
-                DiscardInBuffer();
-                DiscardOutBuffer();
+                this.DiscardInBuffer();
+                this.DiscardOutBuffer();
                 return false;
             }
         }
@@ -222,19 +198,19 @@ namespace NeithDevices.iss
             return ReadI2C(address,internalAddressH,internalAddressL, data) ? data : null;
         }
 
-        public bool ReadI2C(byte address, byte internalAddressH, byte internalAddressL, params byte[] bytes)
+        public bool ReadI2C(byte address, byte internalAddressH, byte internalAddressL, byte[] bytes)
         {
             try
             {
-                DiscardInBuffer();
+                this.DiscardInBuffer();
                 this.Write(CommandPrefixI2C.I2C_AD2, address | (byte)DirectionI2C.ReadBit, internalAddressH,internalAddressL, (byte)bytes.Length);
                 this.Read(bytes);
                 return true;
             }
             catch (TimeoutException)
             {
-                DiscardInBuffer();
-                DiscardOutBuffer();
+                this.DiscardInBuffer();
+                this.DiscardOutBuffer();
                 return false;
             }
         }
@@ -254,12 +230,12 @@ namespace NeithDevices.iss
                     bytes[i] = value[j];
                 }
                 this.Write(bytes);
-                return ReadByte() == 0 ? false : true;
+                return this.ReadByte() == 0 ? false : true;
             }
             catch (TimeoutException)
             {
-                DiscardInBuffer();
-                DiscardOutBuffer();
+                this.DiscardInBuffer();
+                this.DiscardOutBuffer();
                 return false;
             }
         }
@@ -320,9 +296,9 @@ namespace NeithDevices.iss
             {
                 this.Write(bytesToSend.ToArray());
 
-                if (ReadByte() == 0xFF)
+                if (this.ReadByte() == 0xFF)
                 {
-                    if (readCount != ReadByte())
+                    if (readCount != this.ReadByte())
                     {
                         return FailureDirectI2C.RD_LENGTH;
                     }
@@ -339,13 +315,13 @@ namespace NeithDevices.iss
                 }
                 else
                 {
-                    return (FailureDirectI2C)ReadByte();
+                    return (FailureDirectI2C)this.ReadByte();
                 }
             }
             catch (TimeoutException)
             {
-                DiscardInBuffer();
-                DiscardOutBuffer();
+                this.DiscardInBuffer();
+                this.DiscardOutBuffer();
                 return FailureDirectI2C.TIMEOUT;
             }
         }
