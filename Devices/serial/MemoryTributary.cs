@@ -234,44 +234,6 @@ namespace System.IO
         public override void Write(byte[] buffer, int offset, int count)
         {
             throw new NotSupportedException("Writing is not supported");
-            if (count < 0)
-            {
-                throw new ArgumentOutOfRangeException("count", count, "Number of bytes to copy cannot be negative.");
-            }
-            if (buffer == null)
-            {
-                throw new ArgumentNullException("buffer", "Buffer cannot be null.");
-            }
-            if (offset < 0)
-            {
-                throw new ArgumentOutOfRangeException("offset", offset, "Destination offset cannot be negative.");
-            }
-
-            long initialPosition = Position;
-            long copysize;
-            long lcount = count;
-            long loffset = offset;
-            try
-            {
-                do
-                {
-                    copysize = (int)Math.Min(lcount, blockSize - BlockOffset);
-
-                    EnsureCapacity(Position + copysize);
-
-                    Buffer.BlockCopy(buffer, (int)loffset, Block, (int)BlockOffset, (int)copysize);
-                    lcount -= copysize;
-                    loffset += copysize;
-
-                    Position += copysize;
-
-                } while (lcount > 0);
-            }
-            catch (Exception e)
-            {
-                Position = initialPosition;
-                throw e;
-            }
         }
 
         public override int ReadByte()
@@ -300,16 +262,6 @@ namespace System.IO
         public override void WriteByte(byte value)
         {
             throw new NotSupportedException("Writing is not supported");
-            try
-            {
-                EnsureCapacity(Position + 1);
-                Block[BlockOffset] = value;
-            }
-            catch(Exception e)
-            {
-                throw e;
-            }
-            Position++;
         }
 
         public void AppendByte(byte value)

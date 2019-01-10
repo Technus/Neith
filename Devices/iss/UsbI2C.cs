@@ -2,6 +2,7 @@
 using NeithDevices.serial;
 using NeithCore.utility;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace NeithDevices.iss
 {
@@ -246,7 +247,7 @@ namespace NeithDevices.iss
             int readInstances = 0, writeInstances = 0, readCount=0;
             foreach (IConvertible obj in packet.list)
             {
-                if ((byte)CommandDirectI2C.I2CREAD==obj.ToByte(SerialPortExtensions.cultureInfo))
+                if ((byte)CommandDirectI2C.I2CREAD==obj.ToByte(Thread.CurrentThread.CurrentCulture))
                 {
                     byte[] read = packet.readList[readInstances];
                     int count = read.Length;
@@ -262,7 +263,7 @@ namespace NeithDevices.iss
                     }
                     readInstances++;
                 }
-                else if ((byte)CommandDirectI2C.I2CWRITE == obj.ToByte(SerialPortExtensions.cultureInfo))
+                else if ((byte)CommandDirectI2C.I2CWRITE == obj.ToByte(Thread.CurrentThread.CurrentCulture))
                 {
                     IConvertible[] write = packet.writeList[writeInstances];
                     int count = write.Length;
@@ -272,7 +273,7 @@ namespace NeithDevices.iss
                         bytesToSend.Add((byte)CommandDirectI2C.I2CWRITE | 0x0F);
                         for (int i=0; i<16; currentPointer++,i++)
                         {
-                            bytesToSend.Add(write[currentPointer].ToByte(SerialPortExtensions.cultureInfo));
+                            bytesToSend.Add(write[currentPointer].ToByte(Thread.CurrentThread.CurrentCulture));
                         }
                         count -= 16;
                     }
@@ -281,14 +282,14 @@ namespace NeithDevices.iss
                         bytesToSend.Add((byte)((byte)CommandDirectI2C.I2CWRITE | (byte)count));
                         for (; currentPointer<write.Length; currentPointer++)
                         {
-                            bytesToSend.Add(write[currentPointer].ToByte(SerialPortExtensions.cultureInfo));
+                            bytesToSend.Add(write[currentPointer].ToByte(Thread.CurrentThread.CurrentCulture));
                         }
                     }
                     writeInstances++;
                 }
                 else
                 {
-                    bytesToSend.Add(obj.ToByte(SerialPortExtensions.cultureInfo));
+                    bytesToSend.Add(obj.ToByte(Thread.CurrentThread.CurrentCulture));
                 }
             }
 
