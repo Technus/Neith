@@ -51,9 +51,6 @@
     <Reference Include="PInvokeSerialPort, Version=1.0.1.0, Culture=neutral, processorArchitecture=x86">
       <HintPath>..\packages\PInvokeSerialPort.1.0.1\lib\PInvokeSerialPort.dll</HintPath>
     </Reference>
-    <Reference Include="RJCP.SerialPortStream, Version=2.2.0.0, Culture=neutral, PublicKeyToken=5f5e7b70c6a74deb, processorArchitecture=MSIL">
-      <HintPath>..\packages\SerialPortStream.2.2.0\lib\net45\RJCP.SerialPortStream.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Collections.Specialized, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Collections.Specialized.4.3.0\lib\net46\System.Collections.Specialized.dll</HintPath>
@@ -108,7 +105,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="serial\MemoryTributary.cs" />
     <Compile Include="serial\PInvokeSerialPort.cs" />
-    <Compile Include="serial\SerialPortExtensions.cs" />
     <Compile Include="TemporaryClass.cs" />
   </ItemGroup>
   <ItemGroup>
