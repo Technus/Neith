@@ -22,10 +22,13 @@ namespace NeithDevices.iss
                 }
                 catch (TimeoutException)
                 {
-                    this.DiscardInBuffer();
                     this.DiscardOutBuffer();
-                    return TriState.UnknownOrNull;
+                    this.DiscardInBuffer();
                 }
+            }
+            else
+            {
+                throw new NotSupportedException("Testing presence is not supported");
             }
             return TriState.UnknownOrNull;
         }

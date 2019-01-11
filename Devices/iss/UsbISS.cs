@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
-using System.Threading;
-using NeithCore.utility;
 using NeithDevices.serial;
 
 namespace NeithDevices.iss
@@ -23,10 +21,11 @@ namespace NeithDevices.iss
 
             foreach(string name in System.IO.Ports.SerialPort.GetPortNames())
             {
-                UsbISS port = new UsbISS(name);
-                Debug.Print(name);
+                UsbISS port=null;
                 try
                 {
+                    port = new UsbISS(name);
+                    Debug.Print(name);
                     port.Open();
                 }
                 catch(Exception ex) when (ex is InvalidOperationException || ex is UnauthorizedAccessException)
@@ -34,30 +33,33 @@ namespace NeithDevices.iss
                     port.Dispose();
                     continue;
                 }
-                try
+                if (port != null && port.IsOpen)
                 {
-                    string serial = port.ReadSerialNumber();
-                    if (serial != null)
+                    try
                     {
-                        Version version = port.ReadVersion();
-                        if (version != null)
+                        string serial = port.ReadSerialNumber();
+                        if (serial != null)
                         {
-                            port.TestPresenceCapable = version.FirmwareVersion >= 5;
-                            AttachedDevices.Add(serial, port);
-                            continue;
+                            Version version = port.ReadVersion();
+                            if (version != null)
+                            {
+                                port.TestPresenceCapable = version.FirmwareVersion >= 5;
+                                AttachedDevices.Add(serial, port);
+                                continue;
+                            }
                         }
+                        port.Dispose();
                     }
-                    port.Dispose();
-                }
-                catch(TimeoutException)
-                {
-                    port.Dispose();
+                    catch (TimeoutException)
+                    {
+                        port.Dispose();
+                    }
                 }
             }
             return new ReadOnlyDictionary<string, UsbISS>(AttachedDevices);
         }
 
-        public UsbISS(string name) : base(name)
+        private UsbISS(string name) : base(name)
         {
             ReadTimeout = 2000;
         }
