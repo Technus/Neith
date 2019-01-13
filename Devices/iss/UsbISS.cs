@@ -8,11 +8,11 @@ using NeithDevices.serial;
 namespace NeithDevices.iss
 {
     [System.ComponentModel.DesignerCategory("Code")]
-    public partial class UsbISS : SerialPort
+    public partial class UsbISS : CSSSC
     {
         private static Dictionary<string, UsbISS> AttachedDevices = new Dictionary<string, UsbISS>();
         public static ReadOnlyDictionary<string, UsbISS> GetAttachedISS()
-        {
+        {SerialPort
             foreach (KeyValuePair<string,UsbISS> entry in AttachedDevices)
             {
                 entry.Value.Dispose();

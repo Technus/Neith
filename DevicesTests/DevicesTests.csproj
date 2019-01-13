@@ -96,10 +96,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\SerialPortStream\code\SerialPortStream-net45.csproj">
-      <Project>{cea01148-cd2e-4f29-b455-b557b9b4c6d4}</Project>
-      <Name>SerialPortStream-net45</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Devices\Devices.csproj">
       <Project>{F141052A-3485-4EA3-821D-340C0C5BB667}</Project>
       <Name>Devices</Name>

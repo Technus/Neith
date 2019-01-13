@@ -2,7 +2,7 @@
 
 namespace NeithDevices.iss
 {
-    public partial class UsbISS : SerialPort
+    public partial class UsbISS : CSSSC
     {
 
     }
