@@ -129,10 +129,6 @@
     <Content Include="neith_spacepedia_H51_icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\SerialPortStream\code\SerialPortStream-net45.csproj">
-      <Project>{cea01148-cd2e-4f29-b455-b557b9b4c6d4}</Project>
-      <Name>SerialPortStream-net45</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Core\Core.csproj">
       <Project>{ee00787a-a8d4-4ebd-847b-5ca0166949e0}</Project>
       <Name>Core</Name>

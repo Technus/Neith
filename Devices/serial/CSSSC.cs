@@ -18,8 +18,6 @@ namespace NeithDevices.serial
 
         private readonly string name;
         private IntPtr HComm = INVALID_HANDLE_VALUE;
-        private NativeMethods.DCB DCB = new NativeMethods.DCB();
-        private NativeOverlapped overlapped;
 
         public bool IsOpen
         {
@@ -35,22 +33,23 @@ namespace NeithDevices.serial
                 return INVALID_HANDLE_VALUE.Equals(HComm);
             }
         }
+        public uint ReadTimeout = 0xffffffff;
+        public uint WriteTimeout = 0xffffffff;
 
         public CSSSC(string name)
         {
             this.name = name;
         }
 
-        public bool Open()
+        ~CSSSC()
         {
-            return Open(IsClosed);
+            Dispose();
         }
 
-        public bool Open(bool force)
+        public bool Open()
         {
-            if (force)
+            if (IsClosed)
             {
-                Close();
                 try
                 {
                     HComm = UnsafeNativeMethods.CreateFile(
@@ -62,56 +61,45 @@ namespace NeithDevices.serial
                         NativeMethods.FileAttributes.FILE_FLAG_OVERLAPPED,
                         IntPtr.Zero);
                 }
-                catch (Exception e)
+                catch(Exception e)
                 {
-                    throw new Exception("Failed while calling CreateFile", e);
+                    Debug.Print(e.ToString());
                 }
                 finally
                 {
-                    bool result = false;
                     if (IsOpen)
                     {
+                        bool result = false;
+                        NativeMethods.DCB dcbTemp = new NativeMethods.DCB();
                         try
                         {
-                            NativeMethods.DCB dcbTemp=new NativeMethods.DCB();
                             result = UnsafeNativeMethods.GetCommState(HComm, ref dcbTemp);
                         }
                         catch (Exception e)
                         {
-                            throw new Exception("Failed while calling GetCommState", e);
+                            Debug.Print(e.ToString());
                         }
                         finally
                         {
                             if (!result)
                             {
-                                uint errorValue=GetLastError();
-                                try
+                                uint errorValue = GetLastError();
+                                if (UnsafeNativeMethods.CloseHandle(HComm))
                                 {
-                                    result = UnsafeNativeMethods.CloseHandle(HComm);
+                                    HComm = INVALID_HANDLE_VALUE;
+                                    throw new Exception("Failed to GetCommState with error: " + errorValue);
                                 }
-                                catch(Exception e)
+                                else
                                 {
-                                    throw new Exception("Failed while calling CloseHandle", e);
-                                }
-                                finally
-                                {
-                                    if (result)
-                                    {
-                                        HComm = INVALID_HANDLE_VALUE;
-                                        throw new Exception("Failed to GetCommState with error: " + errorValue);
-                                    }
-                                    else
-                                    {
-                                        throw new Exception("Failed to CloseHandle with error: " + GetLastError(),
-                                            new Exception("Failed to GetCommState with error: " + errorValue));
-                                    }
+                                    throw new Exception("Failed to CloseHandle with error: " + GetLastError(),
+                                        new Exception("Failed to GetCommState with error: " + errorValue));
                                 }
                             }
                         }
                     }
                     else
                     {
-                        uint errorValue=GetLastError();
+                        uint errorValue = GetLastError();
                         if (errorValue == (uint)NativeMethods.FileError.ERROR_ACCESS_DENIED)
                         {
                             throw new Exception("Failed to CreateFile Port busy");
@@ -134,16 +122,7 @@ namespace NeithDevices.serial
         {
             if (IsOpen)
             {
-                bool result = false;
-                try
-                {
-                    result = UnsafeNativeMethods.CloseHandle(HComm);
-                }
-                catch (Exception e)
-                {
-                    throw new Exception("Failed while calling CloseHandle", e);
-                }
-                if (result)
+                if (UnsafeNativeMethods.CloseHandle(HComm))
                 {
                     HComm = INVALID_HANDLE_VALUE;
                 }
@@ -155,11 +134,16 @@ namespace NeithDevices.serial
             return IsClosed;
         }
 
-        public bool WriteBytes(byte[] bytes,uint millis=0xFFFFFFFF)
+        public bool Write(byte[] bytes)
+        {
+            return Write(bytes, WriteTimeout);
+        }
+
+        public bool Write(byte[] bytes,uint millis)
         {
             uint transferred;
             uint written;
-            overlapped = new NativeOverlapped
+            NativeOverlapped overlapped = new NativeOverlapped
             {
                 InternalHigh = IntPtr.Zero,
                 InternalLow = IntPtr.Zero,
@@ -168,79 +152,183 @@ namespace NeithDevices.serial
             try
             {
                 overlapped.EventHandle = UnsafeNativeMethods.CreateEventA(IntPtr.Zero, true, false, IntPtr.Zero);
-            }
-            catch(Exception e)
-            {
-                throw new Exception("Failed while calling CreateEventA", e);
-            }
-            if (!INVALID_HANDLE_VALUE.Equals(overlapped.EventHandle))
-            {
-                IntPtr bytesRef=INVALID_HANDLE_VALUE;
-                try
+                if (INVALID_HANDLE_VALUE.Equals(overlapped.EventHandle))
                 {
-                    bytesRef = Marshal.AllocHGlobal(bytes.Length);
-                    Marshal.Copy(bytes, 0, bytesRef, bytes.Length);
-                    if (UnsafeNativeMethods.WriteFile(HComm, bytesRef, (uint)bytes.Length, out written, ref overlapped))
+                    throw new Exception("Failed to CreateEventA Case unknown " + GetLastError());
+                }
+                else
+                {
+                    IntPtr bytesRef = INVALID_HANDLE_VALUE;
+                    try
                     {
-                        return true;
-                    }
-                    else
-                    {
-                        uint error = GetLastError();
-                        if (error == (uint)NativeMethods.FileError.ERROR_IO_PENDING)
-                        {
-                            try
-                            {
-                                if (UnsafeNativeMethods.WaitForSingleObject(overlapped.EventHandle, millis) == 0x00000000)
-                                {
-                                    try
-                                    {
-                                        if (UnsafeNativeMethods.GetOverlappedResult(HComm, ref overlapped, out transferred, false))
-                                        {
-                                            return true;
-                                        }
-                                        else
-                                        {
-                                            return false;
-                                        }
-                                    }
-                                    catch(Exception e)
-                                    {
-                                        throw new Exception("Failed while calling GetOverlappedResult", e);
-                                    }
-                                }
-                                else
-                                {
+                        bytesRef = Marshal.AllocHGlobal(bytes.Length);
+                        Marshal.Copy(bytes, 0, bytesRef, bytes.Length);
 
-                                }
-                            }
-                            catch(Exception e)
-                            {
-                                throw new Exception("Failed while calling WaitForSingleObject", e);
-                            }
+                        if (UnsafeNativeMethods.WriteFile(HComm, bytesRef, (uint)bytes.Length, out written, ref overlapped))
+                        {
+                            return true;
                         }
                         else
                         {
-                            throw new Exception("Failed to WriteFile Case unknown " + GetLastError());
+                            return GetLastError() == (uint)NativeMethods.FileError.ERROR_IO_PENDING &&
+                                UnsafeNativeMethods.WaitForSingleObject(overlapped.EventHandle, millis) == 0x00000000 &&
+                                UnsafeNativeMethods.GetOverlappedResult(HComm, ref overlapped, out transferred, false);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.Print(e.ToString());
+                    }
+                    finally
+                    {
+                        if (!INVALID_HANDLE_VALUE.Equals(bytesRef))
+                        {
+                            Marshal.FreeHGlobal(bytesRef);
                         }
                     }
                 }
-                catch (Exception e)
+            }
+            catch (Exception e)
+            {
+                Debug.Print(e.ToString());
+            }
+            finally
+            {
+                if (!INVALID_HANDLE_VALUE.Equals(overlapped.EventHandle))
                 {
-                    throw new Exception("Failed while calling WriteFile", e);
-                }
-                finally
-                {
-                    if (!INVALID_HANDLE_VALUE.Equals(bytesRef))
+                    if (UnsafeNativeMethods.CloseHandle(overlapped.EventHandle))
                     {
-                        Marshal.FreeHGlobal(bytesRef);
+                        overlapped.EventHandle = INVALID_HANDLE_VALUE;
+                    }
+                    else
+                    {
+                        throw new Exception("Failed to CloseHandle Case unknown " + GetLastError());
                     }
                 }
             }
-            else
+            return false;
+        }
+
+        public void Write(params IConvertible[] enums)
+        {
+            Write<IConvertible>(enums);
+        }
+
+        public void Write<T>(params T[] enums) where T : IConvertible
+        {
+            byte[] bytes = new byte[enums.Length];
+            for (int i = 0; i < bytes.Length; i++)
             {
-                throw new Exception("Failed to CreateEventA Case unknown " + GetLastError());
+                bytes[i] = enums[i].ToByte(Thread.CurrentThread.CurrentCulture);
             }
+            Write(bytes);
+        }
+
+        public byte ReadByte()
+        {
+            return Read(1,ReadTimeout)[0];
+        }
+
+        public byte[] Read(int count)
+        {
+            return Read(count, ReadTimeout);
+        }
+
+        public byte[] Read(int count, uint millis)
+        {
+            byte[] bytes = new byte[count];
+            Read(ref bytes, millis);
+            return bytes;
+        }
+
+        public void Read(byte[] bytes)
+        {
+            Read(ref bytes, ReadTimeout);
+        }
+
+        public void Read(byte[] bytes, uint millis)
+        {
+            Read(ref bytes, ReadTimeout);
+        }
+
+        public void Read(ref byte[] bytes)
+        {
+            Read(ref bytes, ReadTimeout);
+        }
+
+        public void Read(ref byte[] bytes, uint millis)
+        {
+            uint transferred;
+            uint written;
+            NativeOverlapped overlapped = new NativeOverlapped
+            {
+                InternalHigh = IntPtr.Zero,
+                InternalLow = IntPtr.Zero,
+                EventHandle = IntPtr.Zero
+            };
+            try
+            {
+                overlapped.EventHandle = UnsafeNativeMethods.CreateEventA(IntPtr.Zero, true, false, IntPtr.Zero);
+                if (INVALID_HANDLE_VALUE.Equals(overlapped.EventHandle))
+                {
+                    throw new Exception("Failed to CreateEventA Case unknown " + GetLastError());
+                }
+                else
+                {
+                    IntPtr bytesRef = INVALID_HANDLE_VALUE;
+                    try
+                    {
+                        bytesRef = Marshal.AllocHGlobal(bytes.Length);
+
+                        if (UnsafeNativeMethods.ReadFile(HComm, bytesRef, (uint)bytes.Length, out written, ref overlapped))
+                        {
+                            Marshal.Copy(bytesRef, bytes, 0, bytes.Length);
+                            return;
+                        }
+                        else
+                        {
+                            if (GetLastError() == (uint)NativeMethods.FileError.ERROR_IO_PENDING &&
+                                UnsafeNativeMethods.WaitForSingleObject(overlapped.EventHandle, millis) == 0x00000000 &&
+                                UnsafeNativeMethods.GetOverlappedResult(HComm, ref overlapped, out transferred, false))
+                            {
+                                Marshal.Copy(bytesRef, bytes, 0, bytes.Length);
+                                return;
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.Print(e.ToString());
+                    }
+                    finally
+                    {
+                        if (!INVALID_HANDLE_VALUE.Equals(bytesRef))
+                        {
+                            Marshal.FreeHGlobal(bytesRef);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Print(e.ToString());
+            }
+            finally
+            {
+                if (!INVALID_HANDLE_VALUE.Equals(overlapped.EventHandle))
+                {
+                    if (UnsafeNativeMethods.CloseHandle(overlapped.EventHandle))
+                    {
+                        overlapped.EventHandle = INVALID_HANDLE_VALUE;
+                    }
+                    else
+                    {
+                        throw new Exception("Failed to CloseHandle Case unknown " + GetLastError());
+                    }
+                }
+            }
+            bytes = null;
+            return;
         }
 
         public void Dispose()
@@ -257,86 +345,58 @@ namespace NeithDevices.serial
             finally { }
         }
 
+        public bool DiscardInBuffer()
+        {
+            return PurgePort(NativeMethods.PurgeFlags.PURGE_RXCLEAR);
+        }
+
+        public bool DiscardOutBuffer()
+        {
+            return PurgePort(NativeMethods.PurgeFlags.PURGE_TXCLEAR);
+        }
+
         private bool PurgePort(NativeMethods.PurgeFlags flags)
         {
             bool result = false;
             try
             {
-                result = UnsafeNativeMethods.PurgeComm(HComm,flags);
+                result = UnsafeNativeMethods.PurgeComm(HComm, flags);
             }
             catch (Exception e)
             {
-                throw new Exception("Failed while calling PurgeComm", e);
-            }
-            if (!result)
-            {
-                throw new Exception("Failed to PurgeComm Case unknown " + GetLastError());
+                Debug.Print(e.ToString());
             }
             return result;
         }
 
-        bool SetParams(uint baudRate, byte byteSize, byte stopBits, byte parity, bool setRTS, bool setDTR, bool flags)
+        private uint[] GetBuffersBytesCount()
         {
-            bool result = false;
-            if (UnsafeNativeMethods.GetCommState(HComm, ref DCB))
+            try
             {
-                DCB.BaudRate = baudRate;
-                DCB.ByteSize = byteSize;
-                DCB.StopBits = stopBits;
-                DCB.Parity = parity;
-
-                //since 0.8 ->
-                if (setRTS)
+                NativeMethods.COMSTAT comstat = new NativeMethods.COMSTAT();
+                NativeMethods.ComStatErrors errors;
+                if (UnsafeNativeMethods.ClearCommError(HComm,out errors,ref comstat))
                 {
-                    dcb.fRtsControl = RTS_CONTROL_ENABLE;
-                }
-                else
-                {
-                    dcb->fRtsControl = RTS_CONTROL_DISABLE;
-                }
-                if (setDTR == JNI_TRUE)
-                {
-                    dcb->fDtrControl = DTR_CONTROL_ENABLE;
-                }
-                else
-                {
-                    dcb->fDtrControl = DTR_CONTROL_DISABLE;
-                }
-                DCB.fOutxCtsFlow = FALSE;
-                DCB.fOutxDsrFlow = FALSE;
-                DCB.fDsrSensitivity = FALSE;
-                DCB.fTXContinueOnXoff = TRUE;
-                DCB.fOutX = FALSE;
-                DCB.fInX = FALSE;
-                DCB.fErrorChar = FALSE;
-                DCB.fNull = FALSE;
-                DCB.fAbortOnError = FALSE;
-                DCB.XonLim = 2048;
-                DCB.XoffLim = 512;
-                DCB.XonChar = 17; //DC1
-                DCB.XoffChar = 19; //DC3
-                                          //<- since 0.8
-
-                if (UnsafeNativeMethods.SetCommState(HComm, in DCB ))
-                {
-
-                    //since 2.1.0 -> previously setted timeouts by another application should be cleared
-                    COMMTIMEOUTS* lpCommTimeouts = new COMMTIMEOUTS();
-                    lpCommTimeouts->ReadIntervalTimeout = 0;
-                    lpCommTimeouts->ReadTotalTimeoutConstant = 0;
-                    lpCommTimeouts->ReadTotalTimeoutMultiplier = 0;
-                    lpCommTimeouts->WriteTotalTimeoutConstant = 0;
-                    lpCommTimeouts->WriteTotalTimeoutMultiplier = 0;
-                    if (SetCommTimeouts(hComm, lpCommTimeouts))
-                    {
-                        returnValue = JNI_TRUE;
-                    }
-                    delete lpCommTimeouts;
-                    //<- since 2.1.0
+                    return new uint[] { comstat.cbInQue, comstat.cbOutQue };
                 }
             }
-            delete dcb;
-            return returnValue;
+            catch (Exception e)
+            {
+                Debug.Print(e.ToString());
+            }
+            return null;
+        }
+
+        public int BytesToRead()
+        {
+            uint[] buffers = GetBuffersBytesCount();
+            return buffers == null ? -1 : (int)buffers[0];
+        }
+
+        public int BytesToWrite()
+        {
+            uint[] buffers = GetBuffersBytesCount();
+            return buffers == null ? -1 : (int)buffers[1];
         }
 
         private uint GetLastError()
