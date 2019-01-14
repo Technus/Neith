@@ -12,7 +12,7 @@ namespace NeithDevices.iss
     {
         private static Dictionary<string, UsbISS> AttachedDevices = new Dictionary<string, UsbISS>();
         public static ReadOnlyDictionary<string, UsbISS> GetAttachedISS()
-        {SerialPort
+        {
             foreach (KeyValuePair<string,UsbISS> entry in AttachedDevices)
             {
                 entry.Value.Dispose();
@@ -44,6 +44,10 @@ namespace NeithDevices.iss
                             if (version != null)
                             {
                                 port.TestPresenceCapable = version.FirmwareVersion >= 5;
+                                if (!port.TestPresenceCapable)
+                                {
+                                    throw new Exception(version.ToString());
+                                }
                                 AttachedDevices.Add(serial, port);
                                 continue;
                             }

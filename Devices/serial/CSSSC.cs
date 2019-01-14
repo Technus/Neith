@@ -16,8 +16,14 @@ namespace NeithDevices.serial
 
         private static readonly IntPtr INVALID_HANDLE_VALUE = GetPtr(-1);
 
-        private readonly string name;
+        private readonly string name=null;
         private IntPtr HComm = INVALID_HANDLE_VALUE;
+        private NativeOverlapped overlapped = new NativeOverlapped()
+        {
+            InternalHigh = IntPtr.Zero,
+            InternalLow = IntPtr.Zero,
+            EventHandle = INVALID_HANDLE_VALUE
+        };
 
         public bool IsOpen
         {
@@ -33,8 +39,9 @@ namespace NeithDevices.serial
                 return INVALID_HANDLE_VALUE.Equals(HComm);
             }
         }
-        public uint ReadTimeout = 0xffffffff;
-        public uint WriteTimeout = 0xffffffff;
+        private static readonly uint INFINITE = 0xffffffff;
+        public uint ReadTimeout = INFINITE;
+        public uint WriteTimeout = INFINITE;
 
         public CSSSC(string name)
         {
@@ -120,6 +127,24 @@ namespace NeithDevices.serial
 
         public bool Close()
         {
+            try
+            {
+                if (!INVALID_HANDLE_VALUE.Equals(overlapped.EventHandle))
+                {
+                    if (UnsafeNativeMethods.CloseHandle(HComm))
+                    {
+                        overlapped.EventHandle = INVALID_HANDLE_VALUE;
+                    }
+                    else
+                    {
+                        throw new Exception("Failed to CloseHandle Case unknown " + GetLastError());
+                    }
+                }
+            }
+            catch(Exception)
+            {
+
+            }
             if (IsOpen)
             {
                 if (UnsafeNativeMethods.CloseHandle(HComm))
@@ -143,11 +168,11 @@ namespace NeithDevices.serial
         {
             uint transferred;
             uint written;
-            NativeOverlapped overlapped = new NativeOverlapped
+            overlapped = new NativeOverlapped
             {
                 InternalHigh = IntPtr.Zero,
                 InternalLow = IntPtr.Zero,
-                EventHandle = IntPtr.Zero
+                EventHandle = INVALID_HANDLE_VALUE
             };
             try
             {
@@ -258,6 +283,15 @@ namespace NeithDevices.serial
 
         public void Read(ref byte[] bytes, uint millis)
         {
+            int requiredBytes = bytes.Length;
+            if (!SpinWait.SpinUntil(() => {
+                Thread.Sleep(10);
+                return BytesToRead() >= requiredBytes;
+                }, millis == INFINITE ? -1 : (int)millis))
+            {
+                throw new TimeoutException("Timeout reading bytes");
+            }
+
             uint transferred;
             uint written;
             NativeOverlapped overlapped = new NativeOverlapped
@@ -288,7 +322,7 @@ namespace NeithDevices.serial
                         else
                         {
                             if (GetLastError() == (uint)NativeMethods.FileError.ERROR_IO_PENDING &&
-                                UnsafeNativeMethods.WaitForSingleObject(overlapped.EventHandle, millis) == 0x00000000 &&
+                                UnsafeNativeMethods.WaitForSingleObject(overlapped.EventHandle, INFINITE) == 0x00000000 &&
                                 UnsafeNativeMethods.GetOverlappedResult(HComm, ref overlapped, out transferred, false))
                             {
                                 Marshal.Copy(bytesRef, bytes, 0, bytes.Length);
