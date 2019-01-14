@@ -1,8 +1,7 @@
-﻿using NeithDevices.serial;
-
+﻿
 namespace NeithDevices.iss
 {
-    public partial class UsbISS : CSSSC
+    public partial class UsbISS : CSSSC.CSSSC
     {
 
     }

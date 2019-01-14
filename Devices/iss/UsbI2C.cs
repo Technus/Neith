@@ -1,12 +1,11 @@
 ﻿using System;
-using NeithDevices.serial;
 using NeithCore.utility;
 using System.Collections.Generic;
 using System.Threading;
 
 namespace NeithDevices.iss
 {
-    public partial class UsbISS : CSSSC
+    public partial class UsbISS : CSSSC.CSSSC
     {
         private bool TestPresenceCapable;
 

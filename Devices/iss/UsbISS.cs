@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
-using NeithDevices.serial;
 
 namespace NeithDevices.iss
 {
     [System.ComponentModel.DesignerCategory("Code")]
-    public partial class UsbISS : CSSSC
+    public partial class UsbISS : CSSSC.CSSSC
     {
         private static Dictionary<string, UsbISS> AttachedDevices = new Dictionary<string, UsbISS>();
         public static ReadOnlyDictionary<string, UsbISS> GetAttachedISS()

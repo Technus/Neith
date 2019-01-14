@@ -1,9 +1,8 @@
-﻿using NeithDevices.serial;
-using System;
+﻿using System;
 
 namespace NeithDevices.iss
 {
-    public partial class UsbISS : CSSSC
+    public partial class UsbISS : CSSSC.CSSSC
     {
         public bool WritePinsIO(bool io1 = false, bool io2 = false,
             bool io3 = false, bool io4 = false)

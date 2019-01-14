@@ -5,9 +5,9 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace NeithDevices.serial
+namespace CSSSC
 {
-    public class CSSSC:IDisposable
+    public class CSSSC : IDisposable
     {
         private static IntPtr GetPtr(long l)
         {
@@ -16,7 +16,7 @@ namespace NeithDevices.serial
 
         private static readonly IntPtr INVALID_HANDLE_VALUE = GetPtr(-1);
 
-        private readonly string name=null;
+        private readonly string name = null;
         private IntPtr HComm = INVALID_HANDLE_VALUE;
         private NativeOverlapped overlapped = new NativeOverlapped()
         {
@@ -68,7 +68,7 @@ namespace NeithDevices.serial
                         NativeMethods.FileAttributes.FILE_FLAG_OVERLAPPED,
                         IntPtr.Zero);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Debug.Print(e.ToString());
                 }
@@ -141,7 +141,7 @@ namespace NeithDevices.serial
                     }
                 }
             }
-            catch(Exception)
+            catch (Exception)
             {
 
             }
@@ -164,7 +164,7 @@ namespace NeithDevices.serial
             return Write(bytes, WriteTimeout);
         }
 
-        public bool Write(byte[] bytes,uint millis)
+        public bool Write(byte[] bytes, uint millis)
         {
             uint transferred;
             uint written;
@@ -251,7 +251,7 @@ namespace NeithDevices.serial
 
         public byte ReadByte()
         {
-            return Read(1,ReadTimeout)[0];
+            return Read(1, ReadTimeout)[0];
         }
 
         public byte[] Read(int count)
@@ -287,7 +287,7 @@ namespace NeithDevices.serial
             if (!SpinWait.SpinUntil(() => {
                 Thread.Sleep(10);
                 return BytesToRead() >= requiredBytes;
-                }, millis == INFINITE ? -1 : (int)millis))
+            }, millis == INFINITE ? -1 : (int)millis))
             {
                 throw new TimeoutException("Timeout reading bytes");
             }
@@ -371,7 +371,7 @@ namespace NeithDevices.serial
             {
                 Close();//true?
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Debug.Print("Failed while disposing!");
                 Debug.Print(e.ToString());
@@ -409,7 +409,7 @@ namespace NeithDevices.serial
             {
                 NativeMethods.COMSTAT comstat = new NativeMethods.COMSTAT();
                 NativeMethods.ComStatErrors errors;
-                if (UnsafeNativeMethods.ClearCommError(HComm,out errors,ref comstat))
+                if (UnsafeNativeMethods.ClearCommError(HComm, out errors, ref comstat))
                 {
                     return new uint[] { comstat.cbInQue, comstat.cbOutQue };
                 }
@@ -585,9 +585,9 @@ namespace NeithDevices.serial
     {
         public enum FileError : uint
         {
-            ERROR_ACCESS_DENIED=5,
-            ERROR_FILE_NOT_FOUND=2,
-            ERROR_IO_PENDING=997,
+            ERROR_ACCESS_DENIED = 5,
+            ERROR_FILE_NOT_FOUND = 2,
+            ERROR_IO_PENDING = 997,
         }
 
         [Flags]
