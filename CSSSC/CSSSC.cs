@@ -9,6 +9,11 @@ namespace CSSSC
 {
     public class CSSSC : IDisposable
     {
+        public static string[] GetPortNames()
+        {
+            return System.IO.Ports.SerialPort.GetPortNames();
+        }
+
         private static IntPtr GetPtr(long l)
         {
             return IntPtr.Size == 4 ? new IntPtr((int)l) : new IntPtr(l);
@@ -16,7 +21,7 @@ namespace CSSSC
 
         private static readonly IntPtr INVALID_HANDLE_VALUE = GetPtr(-1);
 
-        private readonly string name = null;
+        public readonly string name = null;
         private IntPtr HComm = INVALID_HANDLE_VALUE;
         private NativeOverlapped overlapped = new NativeOverlapped()
         {
@@ -166,72 +171,75 @@ namespace CSSSC
 
         public bool Write(byte[] bytes, uint millis)
         {
-            uint transferred;
-            uint written;
-            overlapped = new NativeOverlapped
+            lock (this)
             {
-                InternalHigh = IntPtr.Zero,
-                InternalLow = IntPtr.Zero,
-                EventHandle = INVALID_HANDLE_VALUE
-            };
-            try
-            {
-                overlapped.EventHandle = UnsafeNativeMethods.CreateEventA(IntPtr.Zero, true, false, IntPtr.Zero);
-                if (INVALID_HANDLE_VALUE.Equals(overlapped.EventHandle))
+                uint transferred;
+                uint written;
+                overlapped = new NativeOverlapped
                 {
-                    throw new Exception("Failed to CreateEventA Case unknown " + GetLastError());
-                }
-                else
+                    InternalHigh = IntPtr.Zero,
+                    InternalLow = IntPtr.Zero,
+                    EventHandle = INVALID_HANDLE_VALUE
+                };
+                try
                 {
-                    IntPtr bytesRef = INVALID_HANDLE_VALUE;
-                    try
+                    overlapped.EventHandle = UnsafeNativeMethods.CreateEventA(IntPtr.Zero, true, false, IntPtr.Zero);
+                    if (INVALID_HANDLE_VALUE.Equals(overlapped.EventHandle))
                     {
-                        bytesRef = Marshal.AllocHGlobal(bytes.Length);
-                        Marshal.Copy(bytes, 0, bytesRef, bytes.Length);
-
-                        if (UnsafeNativeMethods.WriteFile(HComm, bytesRef, (uint)bytes.Length, out written, ref overlapped))
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return GetLastError() == (uint)NativeMethods.FileError.ERROR_IO_PENDING &&
-                                UnsafeNativeMethods.WaitForSingleObject(overlapped.EventHandle, millis) == 0x00000000 &&
-                                UnsafeNativeMethods.GetOverlappedResult(HComm, ref overlapped, out transferred, false);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.Print(e.ToString());
-                    }
-                    finally
-                    {
-                        if (!INVALID_HANDLE_VALUE.Equals(bytesRef))
-                        {
-                            Marshal.FreeHGlobal(bytesRef);
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.Print(e.ToString());
-            }
-            finally
-            {
-                if (!INVALID_HANDLE_VALUE.Equals(overlapped.EventHandle))
-                {
-                    if (UnsafeNativeMethods.CloseHandle(overlapped.EventHandle))
-                    {
-                        overlapped.EventHandle = INVALID_HANDLE_VALUE;
+                        throw new Exception("Failed to CreateEventA Case unknown " + GetLastError());
                     }
                     else
                     {
-                        throw new Exception("Failed to CloseHandle Case unknown " + GetLastError());
+                        IntPtr bytesRef = INVALID_HANDLE_VALUE;
+                        try
+                        {
+                            bytesRef = Marshal.AllocHGlobal(bytes.Length);
+                            Marshal.Copy(bytes, 0, bytesRef, bytes.Length);
+
+                            if (UnsafeNativeMethods.WriteFile(HComm, bytesRef, (uint)bytes.Length, out written, ref overlapped))
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                return GetLastError() == (uint)NativeMethods.FileError.ERROR_IO_PENDING &&
+                                    UnsafeNativeMethods.WaitForSingleObject(overlapped.EventHandle, millis) == 0x00000000 &&
+                                    UnsafeNativeMethods.GetOverlappedResult(HComm, ref overlapped, out transferred, false);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.Print(e.ToString());
+                        }
+                        finally
+                        {
+                            if (!INVALID_HANDLE_VALUE.Equals(bytesRef))
+                            {
+                                Marshal.FreeHGlobal(bytesRef);
+                            }
+                        }
                     }
                 }
+                catch (Exception e)
+                {
+                    Debug.Print(e.ToString());
+                }
+                finally
+                {
+                    if (!INVALID_HANDLE_VALUE.Equals(overlapped.EventHandle))
+                    {
+                        if (UnsafeNativeMethods.CloseHandle(overlapped.EventHandle))
+                        {
+                            overlapped.EventHandle = INVALID_HANDLE_VALUE;
+                        }
+                        else
+                        {
+                            throw new Exception("Failed to CloseHandle Case unknown " + GetLastError());
+                        }
+                    }
+                }
+                return false;
             }
-            return false;
         }
 
         public void Write(params IConvertible[] enums)
@@ -283,86 +291,89 @@ namespace CSSSC
 
         public void Read(ref byte[] bytes, uint millis)
         {
-            int requiredBytes = bytes.Length;
-            if (!SpinWait.SpinUntil(() => {
-                Thread.Sleep(10);
-                return BytesToRead() >= requiredBytes;
-            }, millis == INFINITE ? -1 : (int)millis))
+            lock (this)
             {
-                throw new TimeoutException("Timeout reading bytes");
-            }
-
-            uint transferred;
-            uint written;
-            NativeOverlapped overlapped = new NativeOverlapped
-            {
-                InternalHigh = IntPtr.Zero,
-                InternalLow = IntPtr.Zero,
-                EventHandle = IntPtr.Zero
-            };
-            try
-            {
-                overlapped.EventHandle = UnsafeNativeMethods.CreateEventA(IntPtr.Zero, true, false, IntPtr.Zero);
-                if (INVALID_HANDLE_VALUE.Equals(overlapped.EventHandle))
+                int requiredBytes = bytes.Length;
+                if (!SpinWait.SpinUntil(() => {
+                    Thread.Sleep(10);
+                    return BytesToRead() >= requiredBytes;
+                }, millis == INFINITE ? -1 : (int)millis))
                 {
-                    throw new Exception("Failed to CreateEventA Case unknown " + GetLastError());
+                    throw new TimeoutException("Timeout reading bytes");
                 }
-                else
-                {
-                    IntPtr bytesRef = INVALID_HANDLE_VALUE;
-                    try
-                    {
-                        bytesRef = Marshal.AllocHGlobal(bytes.Length);
 
-                        if (UnsafeNativeMethods.ReadFile(HComm, bytesRef, (uint)bytes.Length, out written, ref overlapped))
+                uint transferred;
+                uint written;
+                NativeOverlapped overlapped = new NativeOverlapped
+                {
+                    InternalHigh = IntPtr.Zero,
+                    InternalLow = IntPtr.Zero,
+                    EventHandle = IntPtr.Zero
+                };
+                try
+                {
+                    overlapped.EventHandle = UnsafeNativeMethods.CreateEventA(IntPtr.Zero, true, false, IntPtr.Zero);
+                    if (INVALID_HANDLE_VALUE.Equals(overlapped.EventHandle))
+                    {
+                        throw new Exception("Failed to CreateEventA Case unknown " + GetLastError());
+                    }
+                    else
+                    {
+                        IntPtr bytesRef = INVALID_HANDLE_VALUE;
+                        try
                         {
-                            Marshal.Copy(bytesRef, bytes, 0, bytes.Length);
-                            return;
-                        }
-                        else
-                        {
-                            if (GetLastError() == (uint)NativeMethods.FileError.ERROR_IO_PENDING &&
-                                UnsafeNativeMethods.WaitForSingleObject(overlapped.EventHandle, INFINITE) == 0x00000000 &&
-                                UnsafeNativeMethods.GetOverlappedResult(HComm, ref overlapped, out transferred, false))
+                            bytesRef = Marshal.AllocHGlobal(bytes.Length);
+
+                            if (UnsafeNativeMethods.ReadFile(HComm, bytesRef, (uint)bytes.Length, out written, ref overlapped))
                             {
                                 Marshal.Copy(bytesRef, bytes, 0, bytes.Length);
                                 return;
                             }
+                            else
+                            {
+                                if (GetLastError() == (uint)NativeMethods.FileError.ERROR_IO_PENDING &&
+                                    UnsafeNativeMethods.WaitForSingleObject(overlapped.EventHandle, INFINITE) == 0x00000000 &&
+                                    UnsafeNativeMethods.GetOverlappedResult(HComm, ref overlapped, out transferred, false))
+                                {
+                                    Marshal.Copy(bytesRef, bytes, 0, bytes.Length);
+                                    return;
+                                }
+                            }
                         }
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.Print(e.ToString());
-                    }
-                    finally
-                    {
-                        if (!INVALID_HANDLE_VALUE.Equals(bytesRef))
+                        catch (Exception e)
                         {
-                            Marshal.FreeHGlobal(bytesRef);
+                            Debug.Print(e.ToString());
+                        }
+                        finally
+                        {
+                            if (!INVALID_HANDLE_VALUE.Equals(bytesRef))
+                            {
+                                Marshal.FreeHGlobal(bytesRef);
+                            }
                         }
                     }
                 }
-            }
-            catch (Exception e)
-            {
-                Debug.Print(e.ToString());
-            }
-            finally
-            {
-                if (!INVALID_HANDLE_VALUE.Equals(overlapped.EventHandle))
+                catch (Exception e)
                 {
-                    if (UnsafeNativeMethods.CloseHandle(overlapped.EventHandle))
+                    Debug.Print(e.ToString());
+                }
+                finally
+                {
+                    if (!INVALID_HANDLE_VALUE.Equals(overlapped.EventHandle))
                     {
-                        overlapped.EventHandle = INVALID_HANDLE_VALUE;
-                    }
-                    else
-                    {
-                        throw new Exception("Failed to CloseHandle Case unknown " + GetLastError());
+                        if (UnsafeNativeMethods.CloseHandle(overlapped.EventHandle))
+                        {
+                            overlapped.EventHandle = INVALID_HANDLE_VALUE;
+                        }
+                        else
+                        {
+                            throw new Exception("Failed to CloseHandle Case unknown " + GetLastError());
+                        }
                     }
                 }
+                bytes = null;
+                return;
             }
-            bytes = null;
-            return;
         }
 
         public void Dispose()
