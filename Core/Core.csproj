@@ -61,9 +61,6 @@
     <PackageReference Include="MongoDB.Driver">
       <Version>2.7.2</Version>
     </PackageReference>
-    <PackageReference Include="TDMSReader">
-      <Version>3.0.27</Version>
-    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

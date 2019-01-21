@@ -9,55 +9,29 @@ namespace NeithCore.utility
         DateTime getTimestamp();
     }
 
-    public static class TimedModificationExtensions
+    public static class TimedModificationUtility
     {
-        public static T GetNewest<T>(this T[] timedModifications) where T : ITimedModification
+        public static T GetNewest<T>(IEnumerable<T> timedModifications) where T: ITimedModification
         {
-            return ((IEnumerable<T>)timedModifications).GetNewest();
+            return GetNewest(timedModifications.ToArray());
         }
 
-        public static T GetNewest<T>(this IEnumerable<T> timedModifications) where T: ITimedModification
+        public static T GetNewest<T>(params T[] timedModifications) where T : ITimedModification
         {
-            return timedModifications.GetNewest();
-        }
-
-        public static T GetNewest<T>(this IEnumerator<T> enumerator) where T : ITimedModification
-        {
-            enumerator.Reset();
-
-            T newest = enumerator.Current;
-            try
+            if (timedModifications != null && timedModifications.Length > 0)
             {
-                if (!enumerator.MoveNext())
+                T newest = timedModifications[0];
+                for (int i = 1; i < timedModifications.Length; i++)
                 {
-                    return newest;
+                    T currentlyTestedObject = timedModifications[i];
+                    if (currentlyTestedObject.getTimestamp().CompareTo(newest.getTimestamp()) > 0)
+                    {
+                        newest = currentlyTestedObject;
+                    }
                 }
+                return newest;
             }
-            catch(InvalidOperationException e)
-            {
-                return GetNewest(enumerator);
-            }
-
-            T currentlyTestedObject;
-        loop:
-            currentlyTestedObject = enumerator.Current;
-            if (currentlyTestedObject.getTimestamp().CompareTo(newest.getTimestamp()) > 0)
-            {
-                newest = currentlyTestedObject;
-            }
-            
-            try
-            {
-                if (enumerator.MoveNext())
-                {
-                    goto loop;
-                }
-            }
-            catch (InvalidOperationException e)
-            {
-                return GetNewest(enumerator);
-            }
-            return newest;
+            return default(T);
         }
     }
 }
