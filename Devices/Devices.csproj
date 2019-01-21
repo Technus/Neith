@@ -26,7 +26,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -105,12 +105,21 @@
     <Compile Include="dwf\dwf.cs" />
     <Compile Include="dwf\PINVOKE.cs" />
     <Compile Include="hid\HidDeviceExtension.cs" />
+    <Compile Include="i2c\_I2C.cs" />
+    <Compile Include="i2c\SM5882.cs" />
+    <Compile Include="i2c\24LC64.cs" />
+    <Compile Include="i2c\AD5245.cs" />
+    <Compile Include="i2c\MCP23017.cs" />
+    <Compile Include="i2c\PCA9670.cs" />
+    <Compile Include="i2c\SC18IS602B.cs" />
     <Compile Include="iss\UsbI2C.cs" />
     <Compile Include="iss\UsbIO.cs" />
     <Compile Include="iss\UsbISS.cs" />
     <Compile Include="iss\UsbSerial.cs" />
     <Compile Include="iss\UsbSPI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="spi\AD9833BRMZ.cs" />
+    <Compile Include="spi\_SPI.cs" />
     <Compile Include="TemporaryClass.cs" />
   </ItemGroup>
   <ItemGroup>

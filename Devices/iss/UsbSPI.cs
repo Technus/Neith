@@ -1,7 +1,9 @@
 ﻿
+using NeithDevices.spi;
+
 namespace NeithDevices.iss
 {
-    public partial class UsbISS : CSSSC.CSSSC
+    public partial class UsbISS : CSSSC.CSSSC,IBusSPI
     {
 
     }

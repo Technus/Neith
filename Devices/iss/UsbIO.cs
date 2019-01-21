@@ -19,13 +19,13 @@ namespace NeithDevices.iss
         {
             try
             {
-                this.Write(CommandPrefixIO.SETPINS, io);
-                return this.ReadByte() == 0 ? false : true;
+                Write(CommandPrefixIO.SETPINS, io);
+                return ReadByte() == 0 ? false : true;
             }
             catch(TimeoutException)
             {
-                this.DiscardInBuffer();
-                this.DiscardOutBuffer();
+                DiscardInBuffer();
+                DiscardOutBuffer();
                 return false;
             }
         }
@@ -34,13 +34,13 @@ namespace NeithDevices.iss
         {
             try
             {
-                this.Write(CommandPrefixIO.GETPINS);
-                return (byte)this.ReadByte();
+                Write(CommandPrefixIO.GETPINS);
+                return (byte)ReadByte();
             }
             catch (TimeoutException)
             {
-                this.DiscardInBuffer();
-                this.DiscardOutBuffer();
+                DiscardInBuffer();
+                DiscardOutBuffer();
                 return null;
             }
         }
@@ -68,13 +68,13 @@ namespace NeithDevices.iss
         {
             try
             {
-                this.Write(CommandPrefixIO.GETAD,pinNumber);
-                return (this.ReadByte()<<8)| this.ReadByte();
+                Write(CommandPrefixIO.GETAD,pinNumber);
+                return (ReadByte()<<8)| ReadByte();
             }
             catch (TimeoutException)
             {
-                this.DiscardInBuffer();
-                this.DiscardOutBuffer();
+                DiscardInBuffer();
+                DiscardOutBuffer();
                 return null;
             }
         }
